@@ -1,0 +1,100 @@
+
+<ScrollView
+xmlns:android="http://schemas.android.com/apk/res/android"
+android:id="@+id/scrollMain"
+android:layout_width="match_parent"
+android:layout_height="match_parent">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:id="@+id/linearLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="top"
+	android:orientation = "vertical"
+	android:scrollbars="vertical">
+	
+	<EditText
+		android:id="@+id/idTxtDelay"
+		android:inputType="textMultiLine" 
+		android:lines="1" 
+		android:minLines="1"
+		android:maxLines="1"
+		android:layout_height="wrap_content" 
+		android:layout_width="match_parent" 
+		android:scrollbars="vertical" 
+		android:hint = "Отложить начало на (сек., по умолчанию 5 сек):"
+	/>
+	<EditText
+		android:id="@+id/idTxtRepeat"
+		android:inputType="textMultiLine" 
+		android:lines="1" 
+		android:minLines="1"
+		android:maxLines="1"
+		android:layout_height="wrap_content" 
+		android:layout_width="match_parent" 
+		android:scrollbars="vertical" 
+		android:hint = "Повторить тренировку (раз):"
+	/>
+
+	<TextView
+		android:id="@+id/idTextsToSpeek"
+		android:inputType="textMultiLine" 
+		android:lines="10" 
+		android:minLines="1"
+		android:maxLines="10000"
+		android:layout_height="wrap_content" 
+		android:layout_width="match_parent" 
+		android:scrollbars="vertical" 
+		android:text ="rrrrr#13#10"
+		android:gravity="bottom|left" 
+	/>
+	<Button
+		android:id="@+id/btnStartStop"
+		android:gravity="top|left" 
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:text="Начать"
+		android:onClick = "onClickMain"
+	/>
+    <Button
+		android:id="@+id/btnFinish"
+		android:gravity="top|left" 
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:text="Завершить тренировку"
+		android:onClick = "onClickFinish"
+	/>
+	<Button
+		android:id="@+id/btnEdit"
+		android:gravity="top|left" 
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:text="Редактор тренировок"
+		android:onClick="onClickEdit"
+	/>
+	<Button
+		android:id="@+id/btnTest"
+		android:gravity="top|left" 
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:text="тест"
+		android:onClick="onClickTest"
+	/>
+
+    <Spinner
+		android:id="@+id/chkTrain"
+		android:gravity="top|left" 
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:textSize="60sp"
+		android:background ="#f55551"
+	/>
+	<CheckBox
+		android:id="@+id/chkAll"
+		android:gravity="top|left" 
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:text="Включая исключенные"
+		android:onClick = "onClickChkAll"
+	/>
+</LinearLayout>
+</ScrollView>
