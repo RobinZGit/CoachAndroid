@@ -15,7 +15,29 @@
 			>
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
+			    <category android:name="android.intent.category.LAUNCHER" />
+			     		
+			</intent-filter>intent-filter>
+			<intent-filter>
+            	<data 
+					android:scheme="content" 
+					android:mimeType="application/vnd.coachAndroid"
+					android:pathPattern=".*\\.djvu"
+					/>
+				<data 
+					android:scheme="content" 
+					android:mimeType="application/coachAndroid"
+					android:pathPattern=".*\\.djvu"
+				/>
+				<data 
+					android:scheme="content" 
+					android:mimeType="application/octet-stream"
+					android:pathPattern=".*\\.djvu"
+				/>
+				<action android:name="android.intent.action.VIEW" />
+			    <category android:name="android.intent.category.DEFAULT" />
+				<category android:name="android.intent.category.BROWSABLE" />
+				
             </intent-filter>
         </activity>
 		<activity
@@ -24,6 +46,7 @@
 			<intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
+			    
             </intent-filter>
         </activity>
 		<service 
