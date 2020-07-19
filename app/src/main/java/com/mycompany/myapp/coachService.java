@@ -107,6 +107,28 @@ public class coachService extends Service
 			if (intent.getIntExtra("CountOfAllIterations", -1) > 0)
 			    Gl_CountOfAllIterations1 = GlnRepeat * intent.getIntExtra("CountOfAllIterations", -1);
 
+
+            //
+			/**/
+			for (int i=0; i < Data.aRithm[3][0].length - 1; i++)
+				try
+				{
+					// ??? не работает?
+					// if ((Data.aRithm[3][0][i + 1][1].trim().toLowerCase() == "int")
+					// ||(Data.aRithm[3][0][i + 1][1].trim().toLowerCase() == "integer")
+					// ||(Data.aRithm[3][0][i + 1][1].trim().toLowerCase() == "float")
+					// ||(Data.aRithm[3][0][i + 1][1].trim().toLowerCase() == "double"))	 
+					// //  GlParser.setVariable(aParamBrief[i].trim(), Double.parseDouble(aParamV[i].trim()));
+
+					GlParser.setVariable(Data.aRithm[3][0][i + 1][0].trim(), Double.parseDouble(Data.aRithm[3][0][i + 1][3].trim()));
+
+				}
+				catch (Exception e)
+				{}
+			/**/
+			//
+
+
 			startserv(intent.getBooleanExtra("wait", false), intent.getIntExtra("CountOfAllIterations", -1), GlnDelayMs);
 		}
 		catch (Exception e)
@@ -188,21 +210,27 @@ public class coachService extends Service
 		{}
 	}
 
-	//текст текущего упражнения. aDealIndexes - массив индексов дел , которые делаются в текущем срабатывани ритма
-	public String fget_TextToSpeek100(String[] aDealIndexes)
+	//[текст , длительность] текущего упражнения. aDealIndexes - массив индексов дел , которые делаются в текущем срабатывани ритма
+	public String[] fget_valuesFromDeal(String[] aDealIndexes)
 	{
+		String sDuration = "0";
 		String sTextToSpeek = "";
 		String sPoint = "";
 		int k = 1;
 
 		for (int i=0, len0=aDealIndexes.length; i < len0; i++)
 		{
-			sTextToSpeek += Data.aDeals100[Integer.parseInt(aDealIndexes[i].trim())][1][0][0] + " ";
+			sTextToSpeek += Data.aDeals100[Integer.parseInt(aDealIndexes[i].trim())][1][0][1] + " ";
 			nFullProp = 0;
 
 			for (int j=1, len= Data.aDeals100[Integer.parseInt(aDealIndexes[i].trim())][1].length; j < len; j++)
 			{
-				nFullProp += Integer.parseInt(Data.aDeals100[Integer.parseInt(aDealIndexes[i].trim())][1][j][1].trim()); // Сумма пропорций навыка
+				try
+				{
+					nFullProp += /*Integer.parseInt*/ GlParser.Parse(Data.aDeals100[Integer.parseInt(aDealIndexes[i].trim())][1][j][3].trim()); // Сумма пропорций навыка
+				}
+				catch (Exception e)
+				{}  
 			}
 
 		    nRandProp = (int) (Math.floor(Math.random() * (nFullProp - 0 + 1)) + 0); //случайное число для определения одного из элементов навыка
@@ -212,41 +240,66 @@ public class coachService extends Service
 			while ((Data.aDeals100[Integer.parseInt(aDealIndexes[i].trim())][1].length > k)
 			       && (nCurrProp <= nRandProp))
 			{//искомый элемент навыка - последний, до которого сумма пропорций < nRandProp  //<= sic!
-				nCurrProp += Integer.parseInt(Data.aDeals100[Integer.parseInt(aDealIndexes[i].trim())][1][k][1].trim());
+			    try
+				{
+					nCurrProp +=   GlParser.Parse(Data.aDeals100[Integer.parseInt(aDealIndexes[i].trim())][1][k][3].trim());
+				}
+				catch (Exception e)
+				{}
 				k = k + 1;
 			}
 
-			sPoint = Data.aDeals100[Integer.parseInt(aDealIndexes[i].trim())][1][k - 1][0];
+			sPoint = Data.aDeals100[Integer.parseInt(aDealIndexes[i].trim())][1][k - 1][1];
             if (sPoint.indexOf(">") > 0)
 			{
 				sPoint = sPoint.replace("->", "");	
 				String[] aPointIndexes = sPoint.split(",");
-				sTextToSpeek += " " +  fget_TextToSpeek100(aPointIndexes) + ", ";
+				String[] aValues =fget_valuesFromDeal(aPointIndexes);
+				sTextToSpeek += " " +  aValues[0] + ", ";
+				sDuration =  aValues[1] ;
 			}
-			else  sTextToSpeek += " " + GlParser.SParse(Data.aDeals100[Integer.parseInt(aDealIndexes[i].trim())][1][k - 1][0]) + ", "; //-1 sic! 
+			else
+			{
+				sTextToSpeek += " " + GlParser.SParse(Data.aDeals100[Integer.parseInt(aDealIndexes[i].trim())][1][k - 1][1]) + ", "; //-1 sic! 
+				//длительности суммируем. если какой то длительности нет то считаем ее 0
+				//!? или же лучше прекратить суммирование и брать из ритма ?!
+				if (Data.aDeals100[Integer.parseInt(aDealIndexes[i].trim())][1][k - 1][5].trim().length() > 0)
+					try
+					{
+						sDuration = String.valueOf(Double.parseDouble(sDuration) 
+												   + GlParser.Parse(Data.aDeals100[Integer.parseInt(aDealIndexes[i].trim())][1][k - 1][5]));
+					}
+					catch (Exception e)
+					{}
+			}	
 		}
-
-		return sTextToSpeek;
+        String[] aRet = {sTextToSpeek,sDuration};
+		return aRet;//sTextToSpeek;
 	} //fget_TextToSpeek100
 
 	//если нет ссылок на дела - сразу выдает текст, иначе вычисляет 
-	public String fget_BeforeTextToSpeek100(String pDealIndexes)
+	public String[] fget_valuesFromDealBefore(String pDealIndexes)
 	{
-
+        String sDuration = "0";
 		String sTextToSpeek = "";
 		String sDealIndexes = pDealIndexes;
 		if (sDealIndexes.indexOf(">") > 0)
 		{
 			sDealIndexes = sDealIndexes.replace("->", "");	
 			String[] aDealIndexes = sDealIndexes.split(",");
-			sTextToSpeek += " " +  fget_TextToSpeek100(aDealIndexes) + ", ";
+			String[] aValues =fget_valuesFromDeal(aDealIndexes);
+			sTextToSpeek += " " +  aValues[0] + ", ";
+			sDuration = aValues[1];
 		}
 		else
 		{
 			sTextToSpeek += " " + GlParser.SParse(pDealIndexes) + ", "; 
+			sDuration = "-100000000"; //если нет ссылок на дела то длительность можно взять только из ритма
 		}
 
 		//подстановка параметров
+		//sTextToSpeek += GlParser.SParse(sTextToSpeek); 
+
 		for (int i=0; i < Data.aRithm[3][0].length - 1; i++)
 			try
 			{
@@ -254,7 +307,9 @@ public class coachService extends Service
 			}
 			catch (Exception e)
 			{}
-		return sTextToSpeek;
+
+		String[] aRet = {sTextToSpeek,sDuration};
+		return aRet;//sTextToSpeek;
 	} //fget_BeforeTextToSpeek
 
 
@@ -278,8 +333,8 @@ public class coachService extends Service
 		if (true)
 		{
 			nRandDispers = 0;//test (int)Math.floor(Math.random() *Integer.parseInt(((Data.aRithm[0][1][0]))) * Integer.parseInt(((Data.aRithm[0][2][0]))) / 100);
-
-		    glsTextToSpeek =  fget_BeforeTextToSpeek100(Data.aRithm[10][0][3][1]);
+            String[] glAvaluesFromDeal =fget_valuesFromDealBefore(Data.aRithm[10][0][3][1]);
+		    glsTextToSpeek =  glAvaluesFromDeal[0];//fget_valuesFromDealBefore(/* BeforeTextToSpeek100(*/Data.aRithm[10][0][3][1])[0];
 			gldNow = new Date();
 			GltxtSpeek += "\n" + glsTextToSpeek ;
 
@@ -323,30 +378,33 @@ public class coachService extends Service
 					GlParser.setVariable("прошлосек", durationMs / 1000);
 					GlParser.setVariable("прошломин", durationMs / (60000));
 					GlParser.setVariable("прошлочас", durationMs / (3600000));
+					/*
+					 for (int i=0; i < Data.aRithm[3][0].length - 1; i++)
+					 try
+					 {
+					 // ??? не работает?
+					 // if ((Data.aRithm[3][0][i + 1][1].trim().toLowerCase() == "int")
+					 // ||(Data.aRithm[3][0][i + 1][1].trim().toLowerCase() == "integer")
+					 // ||(Data.aRithm[3][0][i + 1][1].trim().toLowerCase() == "float")
+					 // ||(Data.aRithm[3][0][i + 1][1].trim().toLowerCase() == "double"))	 
+					 // //  GlParser.setVariable(aParamBrief[i].trim(), Double.parseDouble(aParamV[i].trim()));
 
-					for (int i=0; i < Data.aRithm[3][0].length - 1/*aParamV.length*/; i++)
+					 GlParser.setVariable(Data.aRithm[3][0][i + 1][0].trim(), Double.parseDouble(Data.aRithm[3][0][i + 1][3].trim()));
+
+					 }
+					 catch (Exception e)
+					 {}
+					 */
+					//
+					// длительность берем из дел. если там не была задана то берем из ритма
+					double nd= Double.parseDouble(glAvaluesFromDeal[1]);
+					if (nd <= 0)
 						try
 						{
-                            /* ??? не работает?
-							 if ((Data.aRithm[3][0][i + 1][1].trim().toLowerCase() == "int")
-							 ||(Data.aRithm[3][0][i + 1][1].trim().toLowerCase() == "integer")
-							 ||(Data.aRithm[3][0][i + 1][1].trim().toLowerCase() == "float")
-							 ||(Data.aRithm[3][0][i + 1][1].trim().toLowerCase() == "double"))	 
-							 //  GlParser.setVariable(aParamBrief[i].trim(), Double.parseDouble(aParamV[i].trim()));
-							 */
-							GlParser.setVariable(Data.aRithm[3][0][i + 1][0].trim(), Double.parseDouble(Data.aRithm[3][0][i + 1][3].trim()));
-
+							nd =  GlParser.Parse(Data.aRithm[10][0][1][0]);
 						}
 						catch (Exception e)
 						{}
-					//
-					double nd=0 ;
-					try
-					{
-						nd =  GlParser.Parse(Data.aRithm[10][0][1][0]);
-					}
-					catch (Exception e)
-					{}
 					resume((int) (nRandDispers + Math.round(nd * 1000)));
 				}
 			}
