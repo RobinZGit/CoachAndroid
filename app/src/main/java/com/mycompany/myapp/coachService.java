@@ -109,8 +109,7 @@ public class coachService extends Service
 
 
             //
-			/**/
-			for (int i=0; i < Data.aRithm[3][0].length - 1; i++)
+			for (int i=0; i < Data.aRithm[3][0].length - 2; i++)
 				try
 				{
 					// ??? не работает?
@@ -125,11 +124,10 @@ public class coachService extends Service
 				}
 				catch (Exception e)
 				{}
-			/**/
 			//
 
 
-			startserv(intent.getBooleanExtra("wait", false), intent.getIntExtra("CountOfAllIterations", -1), GlnDelayMs);
+			startserv((intent.getIntExtra("wait",0)==1), intent.getIntExtra("CountOfAllIterations", -1), GlnDelayMs);
 		}
 		catch (Exception e)
 		{}
@@ -332,6 +330,7 @@ public class coachService extends Service
 	{ 
 		if (true)
 		{
+
 			nRandDispers = 0;//test (int)Math.floor(Math.random() *Integer.parseInt(((Data.aRithm[0][1][0]))) * Integer.parseInt(((Data.aRithm[0][2][0]))) / 100);
             String[] glAvaluesFromDeal =fget_valuesFromDealBefore(Data.aRithm[10][0][3][1]);
 		    glsTextToSpeek =  glAvaluesFromDeal[0];//fget_valuesFromDealBefore(/* BeforeTextToSpeek100(*/Data.aRithm[10][0][3][1])[0];
@@ -378,24 +377,7 @@ public class coachService extends Service
 					GlParser.setVariable("прошлосек", durationMs / 1000);
 					GlParser.setVariable("прошломин", durationMs / (60000));
 					GlParser.setVariable("прошлочас", durationMs / (3600000));
-					/*
-					 for (int i=0; i < Data.aRithm[3][0].length - 1; i++)
-					 try
-					 {
-					 // ??? не работает?
-					 // if ((Data.aRithm[3][0][i + 1][1].trim().toLowerCase() == "int")
-					 // ||(Data.aRithm[3][0][i + 1][1].trim().toLowerCase() == "integer")
-					 // ||(Data.aRithm[3][0][i + 1][1].trim().toLowerCase() == "float")
-					 // ||(Data.aRithm[3][0][i + 1][1].trim().toLowerCase() == "double"))	 
-					 // //  GlParser.setVariable(aParamBrief[i].trim(), Double.parseDouble(aParamV[i].trim()));
-
-					 GlParser.setVariable(Data.aRithm[3][0][i + 1][0].trim(), Double.parseDouble(Data.aRithm[3][0][i + 1][3].trim()));
-
-					 }
-					 catch (Exception e)
-					 {}
-					 */
-					//
+					
 					// длительность берем из дел. если там не была задана то берем из ритма
 					double nd= Double.parseDouble(glAvaluesFromDeal[1]);
 					if (nd <= 0)

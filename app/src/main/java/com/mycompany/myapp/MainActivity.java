@@ -102,7 +102,7 @@ public class MainActivity extends Activity
 		intent.putExtra("CountOfAllIterations", Gl_CountOfAllIterations);
 		if (s == "wait")
 		{
-			intent.putExtra(s, true);
+			intent.putExtra(s, 1);
 			startService(intent); //приостановить. не сбрасывать текущее состояние дел
 		}
 		else 
@@ -227,6 +227,9 @@ public class MainActivity extends Activity
 	//начитка параметров
 	protected void setParameters()
 	{
+
+		//btnEdit.setText(String.valueOf(Gl_SelectedIndex));
+
 		layout0 = findViewById(R.id.linearLayout);
 		for (int i=0; i < alParametersFull.toArray().length; i++)
 		{
@@ -307,7 +310,7 @@ public class MainActivity extends Activity
 				else
 				{
 					TextView tv1 =findViewById(fget_paramLabelId(1 + i));
-					if (alParametersFullInd.get(i)  == String.valueOf(Gl_SelectedIndex))
+					if (Integer.parseInt(alParametersFullInd.get(i)) == Integer.parseInt(String.valueOf(Gl_SelectedIndex)))
 						tv1.setVisibility(View.VISIBLE);
 					else 
 						tv1.setVisibility(View.GONE);
@@ -336,7 +339,7 @@ public class MainActivity extends Activity
 				else
 				{
 					EditText edt1 =findViewById(fget_paramTextId(1 + i));
-					if (alParametersFullInd.get(i)  == String.valueOf(Gl_SelectedIndex))
+					if (Integer.parseInt(alParametersFullInd.get(i))  == Integer.parseInt(String.valueOf(Gl_SelectedIndex)))
 						edt1.setVisibility(View.VISIBLE);
 					else 
 						edt1.setVisibility(View.GONE);
@@ -393,6 +396,43 @@ public class MainActivity extends Activity
 
     public void onClickMain(View view)
 	{
+		//считываем измененные (мб) параметры
+		int ii=1;
+		for (int i=0; i < alParametersFull.toArray().length - 1; i++)
+		{  //int ii=1;
+			if (Integer.parseInt(alParametersFullInd.get(i)) == Gl_SelectedIndex)
+			{
+				edtCurr = findViewById(fget_paramTextId(1 + i));	
+				alParametersFullV.set(i, edtCurr.getText().toString().trim());
+				alParametersV.set(ii - 1, edtCurr.getText().toString().trim());
+				//alParametersFullV.set(
+				//заменим значение параметра в массиве, чтобы сохранилось в настройках
+				Data.aMetaRithm[Gl_SelectedIndex][3][0][ii][3] = alParametersFullV.get(i);
+				Data.aRithm = Data.aMetaRithm[Gl_SelectedIndex];
+				Data.aRithm[3][0][ii][3] = alParametersV.get(ii - 1);
+				String ss = Data.aMetaRithm2TechString(Data.aMetaRithm);
+				Data.sAMetaRithm = ss;
+				ss = Data.aRithm2TechString(Data.aRithm);
+				Data.sARithm = ss;
+				ii += 1;
+			}
+		}
+
+		//запомнить настройки
+		SharedPreferences.Editor editor = Data.mSettings.edit();
+		editor.putInt(Data.SET_TRAIN_INDEX,  Gl_SelectedIndex);
+		editor.putString(Data.SET_TRAIN_ID,  Gl_SelectedID);
+		editor.apply();
+		editor = Data.mSettingsData.edit();
+		editor.putString(Data.SET_AMETARITHM, Data.sAMetaRithm);
+		editor.putString(Data.SET_ARITHM, Data.sARithm);
+		editor.putString(Data.SET_ADEALS100, Data.sADeals100);
+		editor.apply();
+		//tvDelay.setText(   Data.mSettingsData.getString(Data.sAParemetersFull,""));
+		spinner.setEnabled(false);
+		chkAll.setEnabled(false);
+		btnEdit.setEnabled(false);
+
 		if (Gl_SelectedIndex < 0)
 		{
 			//String gripe = "Не выбрана тренировка";
@@ -418,19 +458,6 @@ public class MainActivity extends Activity
 				}
 				else
 				{
-					//считываем измененные (мб) параметры
-					for (int i=0; i < alParameters.toArray().length; i++)
-					{
-						edtCurr = findViewById(fget_paramTextId(1 + i));	
-						alParametersV.set(i, edtCurr.getText().toString().trim());
-						//заменим значение параметра в массиве, чтобы сохранилось в настройках
-						Data.aMetaRithm[Gl_SelectedIndex][3][0][i + 1][3] = alParametersV.get(i);
-						Data.aRithm[3][0][i + 1][3] = alParametersV.get(i);
-						String ss = Data.aMetaRithm2TechString(Data.aMetaRithm);
-						Data.sAMetaRithm = ss;
-						ss = Data.aRithm2TechString(Data.aRithm);
-						Data.sARithm = ss;
-					}
 
 					//отсрочка старта
 					try
@@ -459,23 +486,7 @@ public class MainActivity extends Activity
 					resume(GlnDelay * 1000, Gl_CountOfAllIterations, GlnRepeat, dNow); 
 				}
 				btnMain.setText(TXT_BTN_STARTED);
-
-				//запомнить настройки
-				SharedPreferences.Editor editor = Data.mSettings.edit();
-				editor.putInt(Data.SET_TRAIN_INDEX,  Gl_SelectedIndex);
-				editor.putString(Data.SET_TRAIN_ID,  Gl_SelectedID);
-				editor.apply();
-				editor = Data.mSettingsData.edit();
-				editor.putString(Data.SET_AMETARITHM, Data.sAMetaRithm);
-				editor.putString(Data.SET_ARITHM, Data.sARithm);
-				editor.putString(Data.SET_ADEALS100, Data.sADeals100);
-				//
-				editor.apply();
-				//tvDelay.setText(   Data.mSettingsData.getString(Data.sAParemetersFull,""));
-				spinner.setEnabled(false);
-				chkAll.setEnabled(false);
-				btnEdit.setEnabled(false);
-
+				
 			}
 			else
 			{
@@ -541,7 +552,7 @@ public class MainActivity extends Activity
 		//fillActivity();
 
         //начитка параметров
-		setParameters();
+		//??setParameters();
 	}
 
 	public void onClickChkAll(View view)
@@ -611,10 +622,11 @@ public class MainActivity extends Activity
 			@Override
 			public void onItemSelected(AdapterView<?> parent, View view, int position, long id)
 			{
-				Gl_SelectedIndex = aliSpinner.get(position);
+				Gl_SelectedIndex = position;//!! aliSpinner.get(position);
 				Gl_SelectedID = Data.aMetaRithm[Gl_SelectedIndex][0][0][1][1];
 				loadTrainData();
-				//fillActivity();
+				setParameters();
+				//fillActivity();cs
 			}
 
 			@Override
@@ -640,4 +652,90 @@ public class MainActivity extends Activity
 		if (IsRithmInSelectedTags(2))  tvTextToSpeek.setText("yyyyyes"); 
 		else  tvTextToSpeek.setText("nnnnno") ;
     }
+
+
+	//=======================
+
+	// 2do: ПРИВЕСТИ ФОРМУ В НОРМАЛЬНЫЙ ВИД !!! (get set save)
+
+	//
+	public void setSlectedIndex()
+	{
+		//запомнить индекс выбранной тренировки
+		SharedPreferences.Editor editor = Data.mSettings.edit();
+		editor.putInt(Data.SET_TRAIN_INDEX,  Gl_SelectedIndex);
+		editor.putString(Data.SET_TRAIN_ID,  Gl_SelectedID);
+		editor.apply();
+	}
+
+	public void setAllSettings()
+	{
+		//запомнить настройки
+		setSlectedIndex();
+		SharedPreferences.Editor editor = Data.mSettings.edit();
+		editor = Data.mSettingsData.edit();
+		editor.putString(Data.SET_AMETARITHM, Data.sAMetaRithm);
+		editor.putString(Data.SET_ARITHM, Data.sARithm);
+		editor.putString(Data.SET_ADEALS100, Data.sADeals100);
+		editor.apply();
+	}
+
+	protected void getSelectedIndex()
+	{
+		if   (Data.mSettingsData.contains(Data.SET_TRAIN_INDEX))
+		{
+			Gl_SelectedIndex = Integer.parseInt(Data.mSettingsData.getString(Data.SET_TRAIN_INDEX, ""));
+			//Gl_SelectedID = Data.mSettingsData.getString(Data.SET_TRAIN_ID, "");
+		}
+		else
+		{
+			Gl_SelectedIndex = Data.Gl_SelectedIndexInit;
+			//Gl_SelectedID = Data.mSettingsData.getString(Data.SET_TRAIN_ID, "");
+		}
+		//??
+		//  Gl_SelectedIndex = spinner.getSelectedItemPosition();
+	}
+
+	protected void getAllSettings()
+	{
+        getSelectedIndex();
+		if   (Data.mSettingsData.contains(Data.SET_AMETARITHM))
+		{
+			Data.sAMetaRithm = Data.mSettingsData.getString(Data.SET_AMETARITHM, "");
+			Data.sADeals100 = Data.mSettingsData.getString(Data.SET_ADEALS100, "");
+		}
+		else
+		{
+			//else из модуля
+			String ss = Data.aMetaRithm2TechString(Data.aMetaRithmInit);
+			Data.sAMetaRithm = ss;
+
+			//test
+			ss = Data.aRithm2TechString(Data.aDeals100Init);
+			Data.sADeals100 = ss;
+
+		}		
+
+
+
+		//??ВСЕ НИЖЕ С ФОРМЫ А ВСЕ ВЫШЕ ИЗ СОХРАНЕННОГО ФАЙЛА
+		//СДЕЛАТЬ ЕДИНООБРАЗНО!!!!
+
+		// Gl_SelectedIndex = spinner.getSelectedItemPosition();
+		Data.mSplit5d(Data.sAMetaRithm);
+		/*
+		 //начитка тэгов
+		 setTags();
+
+		 //выбор тренировки		
+		 //fillSpinner();
+		 //if (Data.mSettings.contains(Data.SET_TRAIN_INDEX))
+		 //	spinner.setSelection(aliSpinner.indexOf(Data.mSettings.getInt(Data.SET_TRAIN_INDEX, 0)));
+		 //tvTextToSpeek.setText(Data.aMetaRithm[Gl_SelectedIndex][2][0][0][1]);
+
+		 //начитка параметров
+		 setParameters();
+		 */
+	}
+
 }
