@@ -109,7 +109,7 @@ public class coachService extends Service
 
 
             //
-			for (int i=0; i < Data.aRithm[3][0].length - 2; i++)
+			for (int i=0; i < Data.aRithm[3][0].length - 1/*!!2*/; i++)
 				try
 				{
 					// ??? не работает?
@@ -231,12 +231,12 @@ public class coachService extends Service
 				{}  
 			}
 
-		    nRandProp = (int) (Math.floor(Math.random() * (nFullProp - 0 + 1)) + 0); //случайное число для определения одного из элементов навыка
+		    nRandProp = (int) (Math.floor(Math.random() * (nFullProp - 0 + 1)) + 0 -0.0001); //случайное число для определения одного из элементов навыка
 			nCurrProp = 0;//0 sic!
 			k = 1;
 
 			while ((Data.aDeals100[Integer.parseInt(aDealIndexes[i].trim())][1].length > k)
-			       && (nCurrProp <= nRandProp))
+			       && (nCurrProp <= nRandProp)) //???? <=
 			{//искомый элемент навыка - последний, до которого сумма пропорций < nRandProp  //<= sic!
 			    try
 				{
