@@ -248,7 +248,7 @@ public class coachService extends Service
 			}
 
 			sPoint = Data.aDeals100[Integer.parseInt(aDealIndexes[i].trim())][1][k - 1][1];
-            if (sPoint.indexOf(">") > 0)
+            if (sPoint.trim().indexOf("->") == 0)
 			{
 				sPoint = sPoint.replace("->", "");	
 				String[] aPointIndexes = sPoint.split(",");
@@ -281,7 +281,7 @@ public class coachService extends Service
         String sDuration = "0";
 		String sTextToSpeek = "";
 		String sDealIndexes = pDealIndexes;
-		if (sDealIndexes.indexOf(">") > 0)
+		if (sDealIndexes.trim().indexOf("->") == 0)
 		{
 			sDealIndexes = sDealIndexes.replace("->", "");	
 			String[] aDealIndexes = sDealIndexes.split(",");
@@ -314,9 +314,19 @@ public class coachService extends Service
 	private void fDecGl_aRithm()
 	{
 		Gl_CountOfIterations++;
-		if (Integer.parseInt(Data.aRithm[10][0][0][0]) > 1)
+		String sn = "0";
+		//try {
+		//  sn=	String.valueOf(GlParser.Parse(Data.aRithm[10][0][0][0]) );
+		//} catch (Exception e){
+		  sn = String.valueOf(Integer.parseInt(Data.aRithm[10][0][0][0]) );
+		//}   
+		if (Integer.parseInt( sn) > 1)
 		{
-			Data.aRithm[10][0][0][0] = String.valueOf(Integer.parseInt(Data.aRithm[10][0][0][0]) - 1);
+			//try {
+			//	Data.aRithm[10][0][0][0] = String.valueOf(GlParser.Parse(Data.aRithm[10][0][0][0]) - 1);
+			//} catch (Exception e){
+			Data.aRithm[10][0][0][0] = String.valueOf(Integer.parseInt( sn )- 1);
+			//}   
 		}
 		else
 		{
