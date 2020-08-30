@@ -127,7 +127,7 @@ public class coachService extends Service
 			//
 
 
-			startserv((intent.getIntExtra("wait",0)==1), intent.getIntExtra("CountOfAllIterations", -1), GlnDelayMs);
+			startserv((intent.getIntExtra("wait", 0) == 1), intent.getIntExtra("CountOfAllIterations", -1), GlnDelayMs);
 		}
 		catch (Exception e)
 		{}
@@ -231,7 +231,7 @@ public class coachService extends Service
 				{}  
 			}
 
-		    nRandProp = (int) (Math.floor(Math.random() * (nFullProp - 0 + 1)) + 0 -0.0001); //случайное число для определения одного из элементов навыка
+		    nRandProp = (int) (Math.floor(Math.random() * (nFullProp - 0 + 1)) + 0 - 0.0001); //случайное число для определения одного из элементов навыка
 			nCurrProp = 0;//0 sic!
 			k = 1;
 
@@ -318,14 +318,14 @@ public class coachService extends Service
 		//try {
 		//  sn=	String.valueOf(GlParser.Parse(Data.aRithm[10][0][0][0]) );
 		//} catch (Exception e){
-		  sn = String.valueOf(Integer.parseInt(Data.aRithm[10][0][0][0]) );
+		sn = String.valueOf(Integer.parseInt(Data.aRithm[10][0][0][0]));
 		//}   
-		if (Integer.parseInt( sn) > 1)
+		if (Integer.parseInt(sn) > 1)
 		{
 			//try {
 			//	Data.aRithm[10][0][0][0] = String.valueOf(GlParser.Parse(Data.aRithm[10][0][0][0]) - 1);
 			//} catch (Exception e){
-			Data.aRithm[10][0][0][0] = String.valueOf(Integer.parseInt( sn )- 1);
+			Data.aRithm[10][0][0][0] = String.valueOf(Integer.parseInt(sn) - 1);
 			//}   
 		}
 		else
@@ -387,7 +387,7 @@ public class coachService extends Service
 					GlParser.setVariable("прошлосек", durationMs / 1000);
 					GlParser.setVariable("прошломин", durationMs / (60000));
 					GlParser.setVariable("прошлочас", durationMs / (3600000));
-					
+
 					// длительность берем из дел. если там не была задана то берем из ритма
 					double nd= Double.parseDouble(glAvaluesFromDeal[1]);
 					if (nd <= 0)

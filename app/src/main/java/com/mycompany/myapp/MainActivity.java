@@ -80,7 +80,7 @@ public class MainActivity extends Activity
 
 	private boolean isChkAll = false;
 	private coachUtility Data;
-	
+
 	private MatchParser GlParser1;
 
 	//для динамической генерации вьюх на форме
@@ -133,28 +133,31 @@ public class MainActivity extends Activity
 	};	
 
 	//проверки целостности бд
-    protected String check(){
-      String sRet = "";		
-	  	
-	  //1. имя параметра не должно содержаться в имени другого параметра (в пределах одной тренировки)
-	  for(int i=0; i<Data.aMetaRithm.length; i++)
-		for(int j=1; j<Data.aMetaRithm[i][3][0].length; j++)
-		  for(int k=j+1; k<Data.aMetaRithm[i][3][0].length; k++)
-		    if(j!=k){
-			  if( Data.aMetaRithm[i][3][0][j][0].trim().contains( Data.aMetaRithm[i][3][0][k][0].trim()) ) {
-				  String s ="Тренировка " + String.valueOf(i)  + "  "+ Data.aMetaRithm[i][0][0][0][1]+"  Некорректно задан параметр: " + Data.aMetaRithm[i][3][0][k][0].trim() +"  Имя параметра содержится в имени другого параметра: " + Data.aMetaRithm[i][3][0][j][0].trim();
-			    sRet = s+"\n"+sRet;
-			    //Toast toast = Toast.makeText(getApplicationContext(),s,Toast.LENGTH_LONG);
-			    //toast.show();
-		      }
-			  if( Data.aMetaRithm[i][3][0][k][0].trim().contains( Data.aMetaRithm[i][3][0][j][0].trim()) ) {
-				  String s ="Тренировка #" + String.valueOf(i+1) + "  "+ Data.aMetaRithm[i][0][0][0][1]+"  Некорректно задан параметр: " + Data.aMetaRithm[i][3][0][j][0].trim() +"  Имя параметра содержится в имени другого параметра: " + Data.aMetaRithm[i][3][0][k][0].trim();
-					sRet = s+"\n"+sRet;
-			  }		
-			}
-			
-	  return sRet;
-		
+    protected String check()
+	{
+		String sRet = "";		
+		String s ="";
+		//1. имя параметра не должно содержаться в имени другого параметра (в пределах одной тренировки)
+		for (int i=0; i < Data.aMetaRithm.length; i++)
+			for (int j=1; j < Data.aMetaRithm[i][3][0].length; j++)
+				for (int k=j + 1; k < Data.aMetaRithm[i][3][0].length; k++)
+		//if(j!=k){
+					if (Data.aMetaRithm[i][3][0][j][0].trim().contains(Data.aMetaRithm[i][3][0][k][0].trim()))
+					{
+						s = "Тренировка " + String.valueOf(i)  + "  " + Data.aMetaRithm[i][0][0][0][1] + "  Некорректно задан параметр: " + Data.aMetaRithm[i][3][0][k][0].trim() + "  Имя параметра содержится в имени другого параметра: " + Data.aMetaRithm[i][3][0][j][0].trim();
+						sRet = s + "\n" + sRet;
+						//Toast toast = Toast.makeText(getApplicationContext(),s,Toast.LENGTH_LONG);
+						//toast.show();
+						//}
+						if (Data.aMetaRithm[i][3][0][k][0].trim().contains(Data.aMetaRithm[i][3][0][j][0].trim()))
+						{
+							s = "Тренировка #" + String.valueOf(i + 1) + "  " + Data.aMetaRithm[i][0][0][0][1] + "  Некорректно задан параметр: " + Data.aMetaRithm[i][3][0][j][0].trim() + "  Имя параметра содержится в имени другого параметра: " + Data.aMetaRithm[i][3][0][k][0].trim();
+							sRet = s + "\n" + sRet;
+						}		
+					}
+
+		return sRet;
+
 	}
 
 	protected void onCreate(Bundle savedInstanceState)
@@ -193,23 +196,24 @@ public class MainActivity extends Activity
 					//}
 				}
 			});
-			
+
 
 		fillActivity();
-		
+
 		//проверки целостности бд
 		String s=check();
-		if (s.length()>0){
-		  tvDelay.setText(s);	
-		  //btnMain.setText(s);
-		  btnMain.setEnabled(false);
-	      Toast toast = Toast.makeText(getApplicationContext(),s,Toast.LENGTH_LONG);
-	      toast.show();
+		if (s.length() > 0)
+		{
+			tvDelay.setText(s);	
+			//btnMain.setText(s);
+			btnMain.setEnabled(false);
+			Toast toast = Toast.makeText(getApplicationContext(), s, Toast.LENGTH_LONG);
+			toast.show();
 		}  
         else
 	    {		
-          setParameters(); //оно надо? уже есть в fillactivity. переделать форму надо..
-		  btnMain.setText(TXT_BTN_NOTSTARTED);
+			setParameters(); //оно надо? уже есть в fillactivity. переделать форму надо..
+			btnMain.setText(TXT_BTN_NOTSTARTED);
 		}
 	};
 
@@ -408,19 +412,19 @@ public class MainActivity extends Activity
 		}		
 
 		Data.mSplit5d(Data.sAMetaRithm);
-		
+
 		//параметы -  все со всех тренировок, добавляем в имя параметра индекс тренировки для уникальности имени
 		/*???? 
-		for (int i0 =0; i0 < Data.aMetaRithm.length; i0++)
-			for (int i=0; i < Data.aMetaRithm[i0][3][0].length - 1; i++)
-					Data.aMetaRithm[i0][0][0][0][1].replace(Data.aMetaRithm[i0][3][0][i + 1][0].trim(),Data.aMetaRithm[i0][3][0][i + 1][3].trim());
-		*/
+		 for (int i0 =0; i0 < Data.aMetaRithm.length; i0++)
+		 for (int i=0; i < Data.aMetaRithm[i0][3][0].length - 1; i++)
+		 Data.aMetaRithm[i0][0][0][0][1].replace(Data.aMetaRithm[i0][3][0][i + 1][0].trim(),Data.aMetaRithm[i0][3][0][i + 1][3].trim());
+		 */
 		//
 
 		//loadTrainData();//???
 
-		
-		
+
+
         //начитка тэгов
 		setTags();
 
@@ -466,6 +470,52 @@ public class MainActivity extends Activity
 				ii += 1;
 			}
 		}
+		//парсим по параметрам количества подходов, длительность и пр
+		for (int i=0; i < Data.aRithm[3][0].length - 1; i++)
+			try
+			{
+				// ??? не работает?
+				// if ((Data.aRithm[3][0][i + 1][1].trim().toLowerCase() == "int")
+				// ||(Data.aRithm[3][0][i + 1][1].trim().toLowerCase() == "integer")
+				// ||(Data.aRithm[3][0][i + 1][1].trim().toLowerCase() == "float")
+				// ||(Data.aRithm[3][0][i + 1][1].trim().toLowerCase() == "double"))	 
+				// //  GlParser.setVariable(aParamBrief[i].trim(), Double.parseDouble(aParamV[i].trim()));
+
+				GlParser1.setVariable(Data.aRithm[3][0][i + 1][0].trim(), Double.parseDouble(Data.aRithm[3][0][i + 1][3].trim()));
+
+			}
+			catch (Exception e)
+			{}
+	    //наименование
+		//?? Data.aRithm[0][0][0][1] = GlParser1.SParse(Data.aRithm[0][0][0][1]) ;
+		//?? Data.aMetaRithm[Gl_SelectedIndex][0][0][0][1] = Data.aRithm[0][0][0][1];
+
+		for (int i=0; i < Data.aRithm[10].length; i++)
+		{
+			//sn = String.valueOf(Integer.parseInt(Data.aRithm[10][0][0][0]) );
+			try
+			{
+				//кол-во повторений
+				Data.aRithm[10][i][0][0] = String.valueOf((int)GlParser1.Parse(Data.aRithm[10][i][0][0]));
+				Data.aMetaRithm[Gl_SelectedIndex][10][i][0][0] = Data.aRithm[10][i][0][0];
+
+				//длительность (в ритме, а не в деле)
+				Data.aRithm[10][i][1][0] = String.valueOf(GlParser1.Parse(Data.aRithm[10][i][1][0]));
+				Data.aMetaRithm[Gl_SelectedIndex][10][i][1][0] = Data.aRithm[10][i][1][0];
+
+				//дисперсия (в ритме, а не в деле)
+				Data.aRithm[10][i][2][0] = String.valueOf(GlParser1.Parse(Data.aRithm[10][i][2][0]));
+				Data.aMetaRithm[Gl_SelectedIndex][10][i][2][0] = Data.aRithm[10][i][2][0];
+
+				//если сразу задана фраза а не ссылка на дело
+				Data.aRithm[10][i][3][1] = GlParser1.SParse(Data.aRithm[10][i][3][1]);
+				Data.aMetaRithm[Gl_SelectedIndex][10][i][3][1] = Data.aRithm[10][i][3][1];
+
+			}
+			catch (Exception e)
+			{}  
+		}
+
 
 		//запомнить настройки
 		SharedPreferences.Editor editor = Data.mSettings.edit();
@@ -530,33 +580,17 @@ public class MainActivity extends Activity
 					if (GlnDelay > 5)
 						speak("до начала тренировки " + String.valueOf(GlnDelay) + "секунд");
 					GltxtSpeek = "";
-					/*???????
-					for (int i=0; i < Data.aRithm[3][0].length - 1; i++)
-						try
-						{
-							// ??? не работает?
-							// if ((Data.aRithm[3][0][i + 1][1].trim().toLowerCase() == "int")
-							// ||(Data.aRithm[3][0][i + 1][1].trim().toLowerCase() == "integer")
-							// ||(Data.aRithm[3][0][i + 1][1].trim().toLowerCase() == "float")
-							// ||(Data.aRithm[3][0][i + 1][1].trim().toLowerCase() == "double"))	 
-							// //  GlParser.setVariable(aParamBrief[i].trim(), Double.parseDouble(aParamV[i].trim()));
 
-							GlParser1.setVariable(Data.aRithm[3][0][i + 1][0].trim(), Double.parseDouble(Data.aRithm[3][0][i + 1][3].trim()));
-
-						}
-						catch (Exception e)
-						{}
-						*/
 					for (int j=0; j < Data.aRithm[10].length; j++)
-					 // try{
-					 // 	Gl_CountOfAllIterations += GlParser1.Parse( Data.aRithm[10][j][0][0]);
-					 // } catch (Exception e){ 
-					    Gl_CountOfAllIterations +=  Double.parseDouble( Data.aRithm[10][j][0][0]);
-					 // }
+					// try{
+					// 	Gl_CountOfAllIterations += GlParser1.Parse( Data.aRithm[10][j][0][0]);
+					// } catch (Exception e){ 
+					    Gl_CountOfAllIterations +=  Double.parseDouble(Data.aRithm[10][j][0][0]);
+					// }
 					resume(GlnDelay * 1000, Gl_CountOfAllIterations, GlnRepeat, dNow); 
 				}
 				btnMain.setText(TXT_BTN_STARTED);
-				
+
 			}
 			else
 			{
@@ -697,7 +731,7 @@ public class MainActivity extends Activity
 				loadTrainData();
 				setParameters();
 				//fillActivity();cs
-				
+
 			}
 
 			@Override
