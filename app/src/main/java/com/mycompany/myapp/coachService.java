@@ -225,7 +225,7 @@ public class coachService extends Service
 			{
 				try
 				{
-					nFullProp += /*Integer.parseInt*/ GlParser.Parse(Data.aDeals100[Integer.parseInt(aDealIndexes[i].trim())][1][j][3].trim()); // Сумма пропорций навыка
+					nFullProp += /*Integer.parseInt*/ GlParser.Parse(Data.aDeals100[Integer.parseInt(aDealIndexes[i].trim())][1][j][3].trim()); // Сумма пропорций навыка
 				}
 				catch (Exception e)
 				{}  

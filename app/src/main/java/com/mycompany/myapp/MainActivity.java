@@ -752,6 +752,256 @@ public class MainActivity extends Activity
 	}
 	//>>
 
+	//<<сохранить в файл
+	public void onClickSaveToFile(View view)
+	{
+		//Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+		//startActivityForResult(intent, READ_REQUEST_CODE);
+		/*
+		 final Intent chooserIntent = new Intent(this, DirectoryChooserActivity.class);
+
+		 final DirectoryChooserConfig config = DirectoryChooserConfig.builder()
+		 .newDirectoryName("DirChooserSample")
+		 .allowReadOnlyDirectory(true)
+		 .allowNewDirectoryNameModification(true)
+		 .build();
+
+		 chooserIntent.putExtra(DirectoryChooserActivity.EXTRA_CONFIG, config);
+
+		 // REQUEST_DIRECTORY is a constant integer to identify the request, e.g. 0
+		 startActivityForResult(chooserIntent, REQUEST_DIRECTORY);
+		 */
+		// = Path.Combine(
+		/*
+		 String sRithmHeader =   "...Ritm...";
+		 String sDealsHeader = "...Deals...";
+		 //String birthDate = editText3.getText().toString();
+
+		 try {
+		 FileOutputStream fileOut=openFileOutput("/storage/emulated/0/our_file.txt", MODE_APPEND); 
+		 OutputStreamWriter outputWriter=new OutputStreamWriter(fileOut);
+		 outputWriter.write(sRithmHeader);
+		 outputWriter.write(sDealsHeader);
+		 outputWriter.write("\n");
+		 outputWriter.close();
+
+		 } catch (Exception e) {
+		 e.printStackTrace();
+		 }
+		 */
+
+
+
+
+		// проверяем доступность SD
+		if (!Environment.getExternalStorageState().equals(
+				Environment.MEDIA_MOUNTED))
+		{
+			//?? Log.d(LOG_TAG, "SD-карта не доступна: " + Environment.getExternalStorageState());
+			return;
+		}
+
+		// получаем путь к SD
+		File sdPath = Environment.getExternalStorageDirectory();
+		// добавляем свой каталог к пути
+		sdPath = new File("storage/0000-0000" + "/" + "111/");//DIR_SD);
+		// создаем каталог
+		sdPath.mkdirs();
+		// формируем объект File, который содержит путь к файлу
+		File sdFile = new File(sdPath, "1");//FILENAME_SD);
+		try
+		{
+			// открываем поток для записи
+			BufferedWriter bw = new BufferedWriter(new FileWriter(sdFile));
+			// пишем данные
+			bw.write("Содержимое файла на SD");
+			// закрываем поток
+			bw.close();
+			//?? Log.d(LOG_TAG, "Файл записан на SD: " + sdFile.getAbsolutePath());
+		}
+		catch (IOException e)
+		{
+			Toast.makeText(getApplicationContext(),
+						   //Environment.getExternalStorageDirectory().getAbsolutePath()+   
+						   "Exception: " + e.toString(), Toast.LENGTH_LONG).show();
+		}
+	}
+	//>>
+
+	//<<загрузить из файла (новые и изменения старых)
+	public void onClickLoadFromFile(View view)
+	{
+
+		try
+		{
+			// открываем поток для чтения
+			BufferedReader br = new BufferedReader(new InputStreamReader(
+													   openFileInput("storage\\0000-0000\\111\\1")));
+			String str = "";
+			// читаем содержимое
+			while ((str = br.readLine()) != null)
+			{
+				//Log.d(LOG_TAG, str);
+				Toast.makeText(getApplicationContext(),
+							   str, Toast.LENGTH_LONG).show();
+			}
+		}
+		catch (Exception e)
+		{
+			Toast.makeText(getApplicationContext(),
+						   "Exception: " + e.toString(), Toast.LENGTH_LONG).show();
+
+		}
+	}
+	//>>
+	//<<удалить тренировку
+	public void onClickDel(View view)
+	{
+		AlertDialog.Builder alert = new AlertDialog.Builder(this);
+
+		alert.setTitle("Удаление");
+		alert.setMessage("Удалить тренировку " + Data.aMetaRithm[Gl_SelectedIndex][0][0][0][1] + "?");
+
+		//final EditText input = new EditText(this);
+		//input.setText( "КОПИЯ - " + Data.aMetaRithm[ Gl_SelectedIndex][0][0][0][1]);
+		//alert.setView(input);
+
+		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int whichButton)
+				{
+					//String sNewName = input.getText().toString();
+					//  		
+					String[][][][][] array = Data.aMetaRithm; // Original array.
+					String[][][][][] acopy = new String[array.length - 1][][][][]; // Array which will contain the result.
+					//int index = Gl_SelectedIndex; // Remove the value .
+                    // Copy the elements at the left of the index.
+					System.arraycopy(array, 0, acopy, 0, Gl_SelectedIndex);
+                    // Copy the elements at the right of the index.
+					System.arraycopy(array, Gl_SelectedIndex + 1, acopy, Gl_SelectedIndex, array.length - Gl_SelectedIndex - 1);
+					Gl_SelectedIndex = 0;
+					Gl_SelectedID = acopy[Gl_SelectedIndex][0][0][1][1];
+					Data.aMetaRithm = acopy;
+					//запомнить настройки
+					SharedPreferences.Editor editor = Data.mSettings.edit();
+					editor.putInt(Data.SET_TRAIN_INDEX,  Gl_SelectedIndex);
+					editor.putString(Data.SET_TRAIN_ID,  Gl_SelectedID);
+					editor.apply();
+					editor = Data.mSettingsData.edit();
+					editor.putString(Data.SET_AMETARITHM, Data.sAMetaRithm);
+					Data.aRithm = Data.aMetaRithm[Gl_SelectedIndex];
+					//Data.aRithm[3][0][ii][3] = alParametersV.get(ii - 1);
+					String ss = Data.aMetaRithm2TechString(Data.aMetaRithm);
+					Data.sAMetaRithm = ss;
+					ss = Data.aRithm2TechString(Data.aRithm);
+					Data.sARithm = ss;
+					editor.putString(Data.SET_ARITHM, Data.sARithm);
+					//editor.putString(Data.SET_ARITHM, Data.sARithm);
+					//editor.putString(Data.SET_ADEALS100, Data.sADeals100);
+					editor.apply();
+					fillSpinner();
+					spinner.setSelection(Gl_SelectedIndex);
+					Toast.makeText(getApplicationContext(),
+								   "Тренировка удалена" , Toast.LENGTH_LONG).show();
+
+
+				}
+			});
+
+		alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int whichButton)
+				{
+					// Canceled.
+				}
+			});
+
+		alert.show();
+
+    }
+	//>>
+
+	//<<загрузить из файла (новые и изменения старых)
+	public void onClickClone(View view)
+	{
+		AlertDialog.Builder alert = new AlertDialog.Builder(this);
+
+		alert.setTitle("Копирование");
+		alert.setMessage("Введите наименование новой тренировки:");
+
+		final EditText input = new EditText(this);
+		input.setText("КОПИЯ - " + Data.aMetaRithm[Gl_SelectedIndex][0][0][0][1]);
+		alert.setView(input);
+
+		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int whichButton)
+				{
+					String sNewName = input.getText().toString();
+					String aNewName[] = {sNewName};
+					//добавляем клон в массив
+					String[][][][][] acopy = new String[Data.aMetaRithm.length + 1][][][][];
+					System.arraycopy(Data.aMetaRithm, 0, acopy, 0, Gl_SelectedIndex + 1);
+					//System.arraycopy(Data.aMetaRithm, Gl_SelectedIndex, acopy, Gl_SelectedIndex+1,1);
+					acopy[Gl_SelectedIndex + 1] = new String[Data.aMetaRithm[Gl_SelectedIndex].length][][][];
+					for (int i1=0;i1 < Data.aMetaRithm[Gl_SelectedIndex].length;i1++)
+					{
+						acopy[Gl_SelectedIndex + 1][i1] = new String[Data.aMetaRithm[Gl_SelectedIndex][i1].length][][];
+						for (int i2=0;i2 < Data.aMetaRithm[Gl_SelectedIndex][i1].length;i2++)
+						{
+							acopy[Gl_SelectedIndex + 1][i1][i2] = new String[Data.aMetaRithm[Gl_SelectedIndex][i1][i2].length][];
+							for (int i3=0;i3 < Data.aMetaRithm[Gl_SelectedIndex][i1][i2].length;i3++)
+							{
+								acopy[Gl_SelectedIndex + 1][i1][i2][i3] = new String[Data.aMetaRithm[Gl_SelectedIndex][i1][i2][i3].length];
+								for (int i4=0;i4 < Data.aMetaRithm[Gl_SelectedIndex][i1][i2][i3].length;i4++)
+								{
+									acopy[Gl_SelectedIndex + 1][i1][i2][i3][i4] = Data.aMetaRithm[Gl_SelectedIndex][i1][i2][i3][i4] ;
+								}
+							}
+						}
+					}
+					acopy[Gl_SelectedIndex + 1][0][0][1][1] = acopy[Gl_SelectedIndex][0][0][1][1] + "_copy";
+					if (Data.aMetaRithm.length > (Gl_SelectedIndex + 1))
+						System.arraycopy(Data.aMetaRithm, Gl_SelectedIndex + 1, acopy, Gl_SelectedIndex + 2, acopy.length - Gl_SelectedIndex - 2);
+					System.arraycopy(aNewName, 0, acopy[Gl_SelectedIndex + 1][0][0][0], 1, 1);
+					Gl_SelectedIndex = Gl_SelectedIndex + 1;
+					Gl_SelectedID = acopy[Gl_SelectedIndex][0][0][1][1];
+					Data.aMetaRithm = acopy;
+					//запомнить настройки
+					SharedPreferences.Editor editor = Data.mSettings.edit();
+					editor.putInt(Data.SET_TRAIN_INDEX,  Gl_SelectedIndex);
+					editor.putString(Data.SET_TRAIN_ID,  Gl_SelectedID);
+					editor.apply();
+					editor = Data.mSettingsData.edit();
+					editor.putString(Data.SET_AMETARITHM, Data.sAMetaRithm);
+					Data.aRithm = Data.aMetaRithm[Gl_SelectedIndex];
+					//Data.aRithm[3][0][ii][3] = alParametersV.get(ii - 1);
+					String ss = Data.aMetaRithm2TechString(Data.aMetaRithm);
+					Data.sAMetaRithm = ss;
+					ss = Data.aRithm2TechString(Data.aRithm);
+					Data.sARithm = ss;
+					editor.putString(Data.SET_ARITHM, Data.sARithm);
+					//editor.putString(Data.SET_ADEALS100, Data.sADeals100);
+					editor.apply();
+					fillSpinner();
+					spinner.setSelection(Gl_SelectedIndex);
+					Toast.makeText(getApplicationContext(),
+								   "Тренировка скопирована" , Toast.LENGTH_LONG).show();
+				}
+			});
+
+		alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int whichButton)
+				{
+					// Canceled.
+				}
+			});
+
+		alert.show();
+
+
+	}
+	//>>
+
+
+
     public void onClickTest(View view)
 	{
 		if (IsRithmInSelectedTags(2))  tvTextToSpeek.setText("yyyyyes"); 

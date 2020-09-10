@@ -13,11 +13,11 @@ android:layout_height="match_parent">
 	android:scrollbars="vertical">
 	<Spinner
 		android:id="@+id/chkTrain"
-		android:gravity="top|left" 
+		android:gravity="center" 
 		android:layout_width="match_parent"
 		android:layout_height="100sp"
 		android:textSize="60sp"
-		android:background ="#f55551"
+		android:background ="#fff999"
 	/>
 	<EditText
 		android:id="@+id/idTxtDelay"
@@ -56,18 +56,20 @@ android:layout_height="match_parent">
 	/>
 	<Button
 		android:id="@+id/btnStartStop"
-		android:gravity="top|left" 
+		android:gravity="center" 
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
 		android:text="Начать"
+		android:background ="#099999"
 		android:onClick = "onClickMain"
 	/>
     <Button
 		android:id="@+id/btnFinish"
-		android:gravity="top|left" 
+		android:gravity="center" 
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
 		android:text="Завершить тренировку"
+		android:background ="#f55551"
 		android:onClick = "onClickFinish"
 	/>
 	<Button
@@ -77,6 +79,38 @@ android:layout_height="match_parent">
 		android:layout_height="wrap_content"
 		android:text="Редактор тренировок"
 		android:onClick="onClickEdit"
+	/>
+	<Button
+		android:id="@+id/btnEdit"
+		android:gravity="top|left" 
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:text="Сохранить в файл все тренировки"
+		android:onClick="onClickSaveToFile"
+	/>
+	<Button
+		android:id="@+id/btnEdit"
+		android:gravity="top|left" 
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:text="Загрузить тренировки из файла (новые и изменения в старых) "
+		android:onClick="onClickLoadFromFile"
+	/>
+	<Button
+		android:id="@+id/btnEdit"
+		android:gravity="top|left" 
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:text="Скопировать текущую тренировку"
+		android:onClick="onClickClone"
+	/>
+	<Button
+		android:id="@+id/btnEdit"
+		android:gravity="top|left" 
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:text="Удалить тренировку"
+		android:onClick="onClickDel"
 	/>
 	<Button
 		android:id="@+id/btnTest"
