@@ -318,14 +318,15 @@ public class coachService extends Service
 		//try {
 		//  sn=	String.valueOf(GlParser.Parse(Data.aRithm[10][0][0][0]) );
 		//} catch (Exception e){
-		sn = String.valueOf(Integer.parseInt(Data.aRithm[10][0][0][0]));
+		//sn = String.valueOf(Integer.parseInt(Data.aRithm[10][0][0][0]));
+		sn = String.valueOf(Math.floor( Double.parseDouble(Data.aRithm[10][0][0][0])));
 		//}   
-		if (Integer.parseInt(sn) > 1)
+		if (Double.parseDouble(sn) > 1)
 		{
 			//try {
 			//	Data.aRithm[10][0][0][0] = String.valueOf(GlParser.Parse(Data.aRithm[10][0][0][0]) - 1);
 			//} catch (Exception e){
-			Data.aRithm[10][0][0][0] = String.valueOf(Integer.parseInt(sn) - 1);
+			Data.aRithm[10][0][0][0] = String.valueOf(Double.parseDouble(sn) - 1);
 			//}   
 		}
 		else

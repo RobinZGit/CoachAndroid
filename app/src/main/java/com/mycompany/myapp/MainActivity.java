@@ -23,7 +23,25 @@ import java.io.*;
 import android.view.inputmethod.*;
 import android.view.*;
 import android.text.*;
-
+import javax.net.ssl.*;
+import java.util.Map;
+import java.net.URI;
+//import java.io.*;//  .FileUriExposedException;
+import android.net.Uri;
+/*
+ import java.io.ByteArrayOutputStream;
+ import java.io.File;
+ import java.io.FileInputStream;
+ import java.io.FileOutputStream;
+ import java.io.IOException;
+ import java.io.InputStream;
+ import java.io.OutputStream;
+ import java.util.regex.Pattern;
+ */
+//import org.apache.commons.
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.nio.channels.*;
 public class MainActivity extends Activity
 {
 
@@ -75,6 +93,12 @@ public class MainActivity extends Activity
 	private Button btnFinish;
 	private Button btnTest;
 	private Button btnEdit;
+	private Button btnSaveAll;
+	private Button btnClone;
+	private Button btnDisabledEdit;
+	private Button btnDel;
+	private Button btnLoad;
+
 	private Spinner spinner;
 	private CheckBox chkAll;
 
@@ -84,18 +108,20 @@ public class MainActivity extends Activity
 	private MatchParser GlParser1;
 
 	//для динамической генерации вьюх на форме
+	protected final int CHECKBOX_END_ID = 10;
+	protected final int PARAMTEXT_END_ID = 20;
+	protected final int PARAMLABEL_END_ID = 30;
 	protected int fget_checkboxId(int i)
 	{
-		return 1000 * i + 10;
+		return 1000 * i + CHECKBOX_END_ID;
 	}
 	protected int fget_paramTextId(int i)
 	{
-		return 100000 * i + 20;
+		return 100000 * i + PARAMTEXT_END_ID;
 	}
-
 	protected int fget_paramLabelId(int i)
 	{
-		return 100000000 * i + 30;
+		return 100000000 * i + PARAMLABEL_END_ID;
 	}
 
 	private void stopserv(String s)
@@ -129,7 +155,7 @@ public class MainActivity extends Activity
 		// TODO: Implement this method
 		super.onResume();
 		//перечитка массивов, мб сюда попали после редактирования
-		fillActivity();
+		getSettings("");//!!newform fillActivity();
 	};	
 
 	//проверки целостности бд
@@ -141,14 +167,12 @@ public class MainActivity extends Activity
 		for (int i=0; i < Data.aMetaRithm.length; i++)
 			for (int j=1; j < Data.aMetaRithm[i][3][0].length; j++)
 				for (int k=j + 1; k < Data.aMetaRithm[i][3][0].length; k++)
-		//if(j!=k){
+
 					if (Data.aMetaRithm[i][3][0][j][0].trim().contains(Data.aMetaRithm[i][3][0][k][0].trim()))
 					{
 						s = "Тренировка " + String.valueOf(i)  + "  " + Data.aMetaRithm[i][0][0][0][1] + "  Некорректно задан параметр: " + Data.aMetaRithm[i][3][0][k][0].trim() + "  Имя параметра содержится в имени другого параметра: " + Data.aMetaRithm[i][3][0][j][0].trim();
 						sRet = s + "\n" + sRet;
-						//Toast toast = Toast.makeText(getApplicationContext(),s,Toast.LENGTH_LONG);
-						//toast.show();
-						//}
+
 						if (Data.aMetaRithm[i][3][0][k][0].trim().contains(Data.aMetaRithm[i][3][0][j][0].trim()))
 						{
 							s = "Тренировка #" + String.valueOf(i + 1) + "  " + Data.aMetaRithm[i][0][0][0][1] + "  Некорректно задан параметр: " + Data.aMetaRithm[i][3][0][j][0].trim() + "  Имя параметра содержится в имени другого параметра: " + Data.aMetaRithm[i][3][0][k][0].trim();
@@ -160,6 +184,14 @@ public class MainActivity extends Activity
 
 	}
 
+	@Override
+	protected void onDestroy()
+	{
+		setSettings(""); //newform saveSettings();
+		// TODO: Implement this method
+		super.onDestroy();
+	}
+
 	protected void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
@@ -167,14 +199,17 @@ public class MainActivity extends Activity
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 		GlParser1 = new MatchParser();
 		Data = new coachUtility();
-		Data.mSettings = getSharedPreferences(Data.SET_FILE_NAME, Context.MODE_PRIVATE);
-        Data.mSettingsData = getSharedPreferences(Data.SET_AMETARITHM_FILE_NAME, Context.MODE_PRIVATE);
 
 		formatter = new SimpleDateFormat("HH:mm:ss");
 		setContentView(R.layout.main);
 		setTitle("Генератор ритмов");
 
 		layout = findViewById(R.id.linearLayout);
+		layout.setEnabled(false);
+		ProgressBar progressBar = findViewById(R.id.progressBar);
+		progressBar.setVisibility(ProgressBar.VISIBLE);
+
+		progressBar.setVisibility(ProgressBar.INVISIBLE);
 		tvTextToSpeek = findViewById(R.id.idTextsToSpeek);
 		tvDelay = findViewById(R.id.idTxtDelay);
 		tvRepeat = findViewById(R.id.idTxtRepeat);
@@ -184,8 +219,14 @@ public class MainActivity extends Activity
 		btnTest = findViewById(R.id.btnTest);
 		spinner = findViewById(R.id.chkTrain);	
 		chkAll = findViewById(R.id.chkAll);	
+		btnSaveAll = findViewById(R.id.btnSaveAll);
+		btnClone = findViewById(R.id.btnClone);
+		btnDel = findViewById(R.id.btnDel);
+		btnDisabledEdit = findViewById(R.id.btnDisablededit);
+		btnLoad = findViewById(R.id.btnLoad);
 
 		btnTest.setVisibility(View.GONE); //тестовая кнопка невидима
+
 		Gl_CountOfIterations = 0;
 		TTS = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
 				@Override
@@ -198,28 +239,27 @@ public class MainActivity extends Activity
 			});
 
 
-		fillActivity();
-
+		getSettings("");//!!!newform!!    fillActivity();
+        layout.setEnabled(true);
+		progressBar.setVisibility(ProgressBar.INVISIBLE);
 		//проверки целостности бд
-		String s=check();
+		String s="";//!!  замедляет вход     check();
+		//====== !!! перенести на кнопку или перед закрытием ..
+
 		if (s.length() > 0)
 		{
-			tvDelay.setText(s);	
-			//btnMain.setText(s);
+
 			btnMain.setEnabled(false);
 			Toast toast = Toast.makeText(getApplicationContext(), s, Toast.LENGTH_LONG);
 			toast.show();
 		}  
         else
-	    {		
-			setParameters(); //оно надо? уже есть в fillactivity. переделать форму надо..
 			btnMain.setText(TXT_BTN_NOTSTARTED);
-		}
 	};
 
 
-	//начитка тэгов
-	protected void setTags()
+	//начитка тэгов - со всех тренировок
+	protected void getTags()
 	{
 		alTags.clear(); // при редактировании трен тэги могут добавляться. но не будут удаляться
 		String s ="";
@@ -264,21 +304,22 @@ public class MainActivity extends Activity
 				}
 			}
 		}
-
 	}
 
-	//начитка параметров
-	protected void setParameters()
+	//начитка параметров - со всех тренировок и открыть видимость только для параметров текущей тренировки
+	protected void getParameters()
 	{
 
-		//btnEdit.setText(String.valueOf(Gl_SelectedIndex));
-
 		layout0 = findViewById(R.id.linearLayout);
-		for (int i=0; i < alParametersFull.toArray().length; i++)
-		{
-			layout0.removeView(findViewById(1 + fget_paramTextId(i)));
-			layout0.removeView(findViewById(1 + fget_paramLabelId(i)));
+
+		for (int i=0; i < alParametersFull.toArray().length + 1; i++)
+		{ 
+		    View v = findViewById(1 + fget_paramTextId(i));
+			if (v != null) layout0.removeView(v);
+			v = findViewById(1 + fget_paramLabelId(i));
+			if  (v != null) layout0.removeView(v);
 		}
+
 		alParameters.clear(); //при редактировании трен параметры могут добавляться. но не будут удаляться
 		alParametersV.clear(); 
 		alParametersBrief.clear();
@@ -298,7 +339,7 @@ public class MainActivity extends Activity
 			aS0 = Data.aMetaRithm[ind][3][0];
 			if (aS0.length > 1)
 				for (int j = 1; j < aS0.length; j++)
-			//!!! if (!(alParameters.indexOf(aS0[j]) >= 0)) 
+
 					if (!(aS0[j][2].trim() == ""))
 					{
 						if (ind == Gl_SelectedIndex)
@@ -324,8 +365,11 @@ public class MainActivity extends Activity
 						alParametersFullInd.add(String.valueOf(ind));
 					}
 		}
-
+		// for (int i = 0; i<1000; i++){//до 1000 контролов для параметров тренировки
+		//	   layout.removeView();
+		//	}
 		//
+		/* newform*/
 		if ((alParameters.toArray().length > 0)
 			&& (findViewById(fget_paramTextId(1) + 2) == null)
 			)
@@ -338,8 +382,13 @@ public class MainActivity extends Activity
 		}
 
 		for (int i=0;i < alParametersFull.toArray().length; i++)
+		//newform for (int j=0;j<alParametersFullInd.toArray().length;j++)
 		{
-			if (!(alParametersFull.get(i).trim() == ""))
+			//		int i = Integer.parseInt( alParametersFullInd.get(j)); //newform
+			//newform
+			//  if (Integer.parseInt(alParametersFullInd.get(i)) == Integer.parseInt(String.valueOf(Gl_SelectedIndex)))
+
+		    if ((!(alParametersFull.get(i).trim() == "")))
 			{
 				if (findViewById(fget_paramLabelId(1 + i)) == null)
 				{
@@ -366,16 +415,7 @@ public class MainActivity extends Activity
 					LayoutParams lp0 = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
 					edt.setText(alParametersFullV.get(i));
 					edt.setId(fget_paramTextId(1 + i));
-					/*
-					 edt.addTextChangedListener(new TextWatcher() {  
-					 public void afterTextChanged(Editable s) {}  
-					 public void beforeTextChanged(CharSequence s, int start, int count, int after) {}  
-					 public void onTextChanged(CharSequence s, int start, int before, int count) {  
-					 // tvTextToSpeek.setText(s.toString());
-					 // alParametersV2.add(0,s.toString());
-					 }  
-					 });  
-					 */
+
 					layout0.addView(edt, lp0);
 					// 
 				}
@@ -391,152 +431,38 @@ public class MainActivity extends Activity
 		}
 	}
 
-	protected void fillActivity()
-	{
-
-		if   (Data.mSettingsData.contains(Data.SET_AMETARITHM))
-		{
-			Data.sAMetaRithm = Data.mSettingsData.getString(Data.SET_AMETARITHM, "");
-			Data.sADeals100 = Data.mSettingsData.getString(Data.SET_ADEALS100, "");
-		}
-		else
-		{
-			//else из модуля
-			String ss = Data.aMetaRithm2TechString(Data.aMetaRithmInit);
-			Data.sAMetaRithm = ss;
-
-			//test
-			ss = Data.aRithm2TechString(Data.aDeals100Init);
-			Data.sADeals100 = ss;
-
-		}		
-
-		Data.mSplit5d(Data.sAMetaRithm);
-
-		//параметы -  все со всех тренировок, добавляем в имя параметра индекс тренировки для уникальности имени
-		/*???? 
-		 for (int i0 =0; i0 < Data.aMetaRithm.length; i0++)
-		 for (int i=0; i < Data.aMetaRithm[i0][3][0].length - 1; i++)
-		 Data.aMetaRithm[i0][0][0][0][1].replace(Data.aMetaRithm[i0][3][0][i + 1][0].trim(),Data.aMetaRithm[i0][3][0][i + 1][3].trim());
-		 */
-		//
-
-		//loadTrainData();//???
-
-
-
-        //начитка тэгов
-		setTags();
-
-		//выбор тренировки		
-		fillSpinner();
-		if (Data.mSettings.contains(Data.SET_TRAIN_INDEX))
-			spinner.setSelection(aliSpinner.indexOf(Data.mSettings.getInt(Data.SET_TRAIN_INDEX, 0)));
-	    tvTextToSpeek.setText(Data.aMetaRithm[Gl_SelectedIndex][2][0][0][1]);
-
-		//начитка параметров
-		setParameters();
-	}
-
 	public void onClickFinish(View view)
 	{
-		//try{
+
 		stopserv("exit");
-		//}
-		//catch (Exception e){};	
+
 		this.finish();
 	}
 
     public void onClickMain(View view)
 	{
-		//считываем измененные (мб) параметры
-		int ii=1;
-		for (int i=0; i < alParametersFull.toArray().length - 1; i++)
-		{  //int ii=1;
-			if (Integer.parseInt(alParametersFullInd.get(i)) == Gl_SelectedIndex)
-			{
-				edtCurr = findViewById(fget_paramTextId(1 + i));	
-				alParametersFullV.set(i, edtCurr.getText().toString().trim());
-				alParametersV.set(ii - 1, edtCurr.getText().toString().trim());
-				//alParametersFullV.set(
-				//заменим значение параметра в массиве, чтобы сохранилось в настройках
-				Data.aMetaRithm[Gl_SelectedIndex][3][0][ii][3] = alParametersFullV.get(i);
-				Data.aRithm = Data.aMetaRithm[Gl_SelectedIndex];
-				Data.aRithm[3][0][ii][3] = alParametersV.get(ii - 1);
-				String ss = Data.aMetaRithm2TechString(Data.aMetaRithm);
-				Data.sAMetaRithm = ss;
-				ss = Data.aRithm2TechString(Data.aRithm);
-				Data.sARithm = ss;
-				ii += 1;
-			}
-		}
-		//парсим по параметрам количества подходов, длительность и пр
-		for (int i=0; i < Data.aRithm[3][0].length - 1; i++)
-			try
-			{
-				// ??? не работает?
-				// if ((Data.aRithm[3][0][i + 1][1].trim().toLowerCase() == "int")
-				// ||(Data.aRithm[3][0][i + 1][1].trim().toLowerCase() == "integer")
-				// ||(Data.aRithm[3][0][i + 1][1].trim().toLowerCase() == "float")
-				// ||(Data.aRithm[3][0][i + 1][1].trim().toLowerCase() == "double"))	 
-				// //  GlParser.setVariable(aParamBrief[i].trim(), Double.parseDouble(aParamV[i].trim()));
+        //запомнить настройки
+		setSettings("");
 
-				GlParser1.setVariable(Data.aRithm[3][0][i + 1][0].trim(), Double.parseDouble(Data.aRithm[3][0][i + 1][3].trim()));
+		//распарсить что можно до передачи в сервис
+		parseSettings();
 
-			}
-			catch (Exception e)
-			{}
-	    //наименование
-		//?? Data.aRithm[0][0][0][1] = GlParser1.SParse(Data.aRithm[0][0][0][1]) ;
-		//?? Data.aMetaRithm[Gl_SelectedIndex][0][0][0][1] = Data.aRithm[0][0][0][1];
-
-		for (int i=0; i < Data.aRithm[10].length; i++)
-		{
-			//sn = String.valueOf(Integer.parseInt(Data.aRithm[10][0][0][0]) );
-			try
-			{
-				//кол-во повторений
-				Data.aRithm[10][i][0][0] = String.valueOf((int)GlParser1.Parse(Data.aRithm[10][i][0][0]));
-				Data.aMetaRithm[Gl_SelectedIndex][10][i][0][0] = Data.aRithm[10][i][0][0];
-
-				//длительность (в ритме, а не в деле)
-				Data.aRithm[10][i][1][0] = String.valueOf(GlParser1.Parse(Data.aRithm[10][i][1][0]));
-				Data.aMetaRithm[Gl_SelectedIndex][10][i][1][0] = Data.aRithm[10][i][1][0];
-
-				//дисперсия (в ритме, а не в деле)
-				Data.aRithm[10][i][2][0] = String.valueOf(GlParser1.Parse(Data.aRithm[10][i][2][0]));
-				Data.aMetaRithm[Gl_SelectedIndex][10][i][2][0] = Data.aRithm[10][i][2][0];
-
-				//если сразу задана фраза а не ссылка на дело
-				Data.aRithm[10][i][3][1] = GlParser1.SParse(Data.aRithm[10][i][3][1]);
-				Data.aMetaRithm[Gl_SelectedIndex][10][i][3][1] = Data.aRithm[10][i][3][1];
-
-			}
-			catch (Exception e)
-			{}  
-		}
-
-
-		//запомнить настройки
-		SharedPreferences.Editor editor = Data.mSettings.edit();
-		editor.putInt(Data.SET_TRAIN_INDEX,  Gl_SelectedIndex);
-		editor.putString(Data.SET_TRAIN_ID,  Gl_SelectedID);
-		editor.apply();
-		editor = Data.mSettingsData.edit();
-		editor.putString(Data.SET_AMETARITHM, Data.sAMetaRithm);
-		editor.putString(Data.SET_ARITHM, Data.sARithm);
-		editor.putString(Data.SET_ADEALS100, Data.sADeals100);
-		editor.apply();
-		//tvDelay.setText(   Data.mSettingsData.getString(Data.sAParemetersFull,""));
+		//при запущенной тренировке (даже на паузе) отключаем реакцию кнопок 
 		spinner.setEnabled(false);
 		chkAll.setEnabled(false);
 		btnEdit.setEnabled(false);
+		btnSaveAll.setEnabled(false);
+	    btnClone.setEnabled(false);
+	    btnDisabledEdit.setEnabled(false);
+	    btnDel.setEnabled(false);
+	    btnLoad.setEnabled(false);
+		tvDelay.setEnabled(false);
+		tvRepeat.setEnabled(false);
+		tvTextToSpeek.setEnabled(false);
 
 		if (Gl_SelectedIndex < 0)
 		{
-			//String gripe = "Не выбрана тренировка";
-			//EOFException e= new EOFException(gripe);
-			//throw e;
+
 		}
 		if (btnMain.getText() == TXT_BTN_FINISHED)
 		{
@@ -547,9 +473,6 @@ public class MainActivity extends Activity
 			if (((btnMain.getText() == TXT_BTN_NOTSTARTED) || (btnMain.getText() == TXT_BTN_PAUSED)))
 			{ 
 				Date dNow = new Date();
-				Data.aRithm = Data.aMetaRithm[Gl_SelectedIndex];
-				Data.sARithm = Data.aRithm2TechString(Data.aRithm);
-
 			    if (btnMain.getText() == TXT_BTN_PAUSED)
 				{
 					speak("тренировка продолжена"); 
@@ -557,7 +480,6 @@ public class MainActivity extends Activity
 				}
 				else
 				{
-
 					//отсрочка старта
 					try
 					{
@@ -582,11 +504,8 @@ public class MainActivity extends Activity
 					GltxtSpeek = "";
 
 					for (int j=0; j < Data.aRithm[10].length; j++)
-					// try{
-					// 	Gl_CountOfAllIterations += GlParser1.Parse( Data.aRithm[10][j][0][0]);
-					// } catch (Exception e){ 
-					    Gl_CountOfAllIterations +=  Double.parseDouble(Data.aRithm[10][j][0][0]);
-					// }
+						Gl_CountOfAllIterations +=  Double.parseDouble(Data.aRithm[10][j][0][0]);
+
 					resume(GlnDelay * 1000, Gl_CountOfAllIterations, GlnRepeat, dNow); 
 				}
 				btnMain.setText(TXT_BTN_STARTED);
@@ -602,70 +521,20 @@ public class MainActivity extends Activity
 		}
 	}
 
-
 	public void speak(String s)
 	{
 		try
 		{
 			TTS.speak(s, TextToSpeech.QUEUE_FLUSH, null); 
-			//  tvTextToSpeek.setText( String.valueOf(Gl_CountOfIterations) + " | "+ glsTextToSpeek);//  String.valueOf(Gl_CountOfIterations));
 		}
 		catch (Exception e)
 		{}
 	}
 
-	public void loadTrainData()
-	{
-		btnMain.setText(TXT_BTN_NOTSTARTED);
-
-		/*Вернуть?
-		 GltxtSpeek = "===  Тренировка:  =========================\n\n";
-		 int nDuration = 0;
-		 for(int i = 0; i< Gl_Data.aRithm.length; i++){ 
-		 nDuration +=Float.parseFloat(Gl_Data.aRithm[i][0][0])*Float.parseFloat(Gl_Data.aRithm[i][1][0]);   
-		 };
-		 glTrainingTimeMs = nDuration * 1000; 
-		 int nSecDur = nDuration % 60  ;
-		 double nMinDur = (Math.floor(nDuration / 60)) % 60  ;
-		 double nHDur = Math.floor(Math.floor(nDuration / 60) / 60) % 60;
-		 GltxtSpeek +="\nПродолжительность:  " + Math.round(nHDur) + " часов, " + Math.round(nMinDur) + " минут, " + nSecDur + " секунд\n" ;
-
-		 GltxtSpeek = GltxtSpeek + "\n" + Gl_Data.ShortDescription + "\n\n";
-
-		 for(int i = 0; i< Gl_Data.aRithm.length; i++){ 
-		 GltxtSpeek +="\nВ ритме:  ";
-		 GltxtSpeek += Gl_Data.aRithm[i][0][0] + " раз по " + Gl_Data.aRithm[i][1][0] + " сек. с дисперсией " + Gl_Data.aRithm[i][2][0] + "%";//\n";
-		 Gl_CountOfAllIterations += Integer.parseInt(Gl_Data.aRithm[i][0][0]);
-		 GltxtSpeek += "  Упражнения:\n";
-		 for(int j = 0; j< Gl_Data.aRithm[i][3].length ; j++) {
-		 GltxtSpeek += "  " + (j+1) + ": ";// \n";//":\n";
-		 GltxtSpeek += "  " + Gl_Data.aDeals[  Integer.parseInt(Gl_Data.aRithm[i][3][j] ) ][0][0] + ", одно из перечисленных (с долей вероятности):  \n";
-		 int nFProp = 0;
-		 for (int l=1; l<Gl_Data.aDeals[  Integer.parseInt( Gl_Data.aRithm[i][3][j])].length; l++)  nFProp +=  Integer.parseInt(Gl_Data.aDeals[  Integer.parseInt( Gl_Data.aRithm[i][3][j] ) ][l][1]);       
-		 for (int l=1; l<Gl_Data.aDeals[  Integer.parseInt( Gl_Data.aRithm[i][3][j])].length; l++){
-		 GltxtSpeek +="          " + Gl_Data.aDeals[ Integer.parseInt(  Gl_Data.aRithm[i][3][j])][l][0] + " ( " + Gl_Data.aDeals[ Integer.parseInt(Gl_Data.aRithm[i][3][j])][l][1] + " из " + nFProp + ")\n";
-		 }  
-		 }    
-		 }
-
-		 GltxtSpeek += "\n\n Для изменения тренировки необходимо редактировать запускаемый файл html.\n";   
-		 tvTextToSpeek.setText(GltxtSpeek);
-		 */
-
-		tvTextToSpeek.setText(Data.aMetaRithm[Gl_SelectedIndex][2][0][0][1]);
-		//fillActivity();
-
-        //начитка параметров
-		//??setParameters();
-	}
-
 	public void onClickChkAll(View view)
 	{
 		isChkAll = !isChkAll;
-		fillSpinner();
-
-		//loadTrainData();
-		fillActivity();  //ОНО НАДО???
+		getSettings(""); //newform fillActivity();  //ОНО НАДО???
 	}
 
 	public boolean IsInSelectedTags(String str)
@@ -711,12 +580,17 @@ public class MainActivity extends Activity
 		aliSpinner.clear();
 		for (int i = 0; i < Data.aMetaRithm.length; i++)
 		{// начитываем в массив список доступных тренировок
-			if ((!(Data.aMetaRithm[i][1][0][0][1] == "1")) | isChkAll)
-				if (IsRithmInSelectedTags(i)) 
-				{
-					alSpinner.add(Data.aMetaRithm[i][0][0][0][1]);
-					aliSpinner.add(i);
-				}	
+		    try
+			{
+				if (!(GlParser1.Parse(Data.aMetaRithm[i][1][0][0][1]) > 0) | isChkAll)
+					if (IsRithmInSelectedTags(i)) 
+					{
+						alSpinner.add(Data.aMetaRithm[i][0][0][0][1]);
+						aliSpinner.add(i);
+					}	
+		    }
+			catch (Exception e)
+			{}		
 		}	
 		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, alSpinner);
 		adapter.setDropDownViewResource(android.R.layout.simple_gallery_item);
@@ -726,11 +600,16 @@ public class MainActivity extends Activity
 			@Override
 			public void onItemSelected(AdapterView<?> parent, View view, int position, long id)
 			{
-				Gl_SelectedIndex = position;//!! aliSpinner.get(position);
+				Gl_SelectedIndex = position;
 				Gl_SelectedID = Data.aMetaRithm[Gl_SelectedIndex][0][0][1][1];
-				loadTrainData();
-				setParameters();
-				//fillActivity();cs
+
+				btnMain.setText(TXT_BTN_NOTSTARTED);
+				tvTextToSpeek.setText(Data.aMetaRithm[Gl_SelectedIndex][2][0][0][1]);
+				tvDelay.setText(Data.aMetaRithm[Gl_SelectedIndex][1][0][2][1]);
+				tvRepeat.setText(Data.aMetaRithm[Gl_SelectedIndex][1][0][1][1]);
+				tvTextToSpeek.setText(Data.aMetaRithm[Gl_SelectedIndex][2][0][0][1]);
+				getTags();//?? оно надо  ??
+				getParameters();
 
 			}
 
@@ -746,51 +625,36 @@ public class MainActivity extends Activity
 	//<<ФОРМА РЕДАКТИРОВАНИЯ
 	public void onClickEdit(View view)
 	{
-		fillActivity();
+		getSettings(""); 
 		Intent intent = new Intent(MainActivity.this, EditFormActivity.class);
 		startActivity(intent);
 	}
 	//>>
 
+	//для генерации уникального ид и наименования при копировании	
+	private String sMakeUniqueWord(String sSource, String sAddWord, int nInd2Compare)
+	{
+		int nN =1;
+		boolean fl = true;
+		String sret = sAddWord + String.valueOf(nN) + "_" + sSource;
+		while (fl)
+		{
+			fl = false;
+			for (int i=0; i < Data.aMetaRithm.length; i++)
+				fl = fl || (Data.aMetaRithm[i][0][0][nInd2Compare][1].equals(sret));
+			if (fl)
+			{
+				nN += 1;	
+				sret = sAddWord + String.valueOf(nN) + "_" + sSource;
+			}
+		}	
+
+		return sAddWord + String.valueOf(nN) + "_" + sSource;
+	}
+
 	//<<сохранить в файл
 	public void onClickSaveToFile(View view)
 	{
-		//Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
-		//startActivityForResult(intent, READ_REQUEST_CODE);
-		/*
-		 final Intent chooserIntent = new Intent(this, DirectoryChooserActivity.class);
-
-		 final DirectoryChooserConfig config = DirectoryChooserConfig.builder()
-		 .newDirectoryName("DirChooserSample")
-		 .allowReadOnlyDirectory(true)
-		 .allowNewDirectoryNameModification(true)
-		 .build();
-
-		 chooserIntent.putExtra(DirectoryChooserActivity.EXTRA_CONFIG, config);
-
-		 // REQUEST_DIRECTORY is a constant integer to identify the request, e.g. 0
-		 startActivityForResult(chooserIntent, REQUEST_DIRECTORY);
-		 */
-		// = Path.Combine(
-		/*
-		 String sRithmHeader =   "...Ritm...";
-		 String sDealsHeader = "...Deals...";
-		 //String birthDate = editText3.getText().toString();
-
-		 try {
-		 FileOutputStream fileOut=openFileOutput("/storage/emulated/0/our_file.txt", MODE_APPEND); 
-		 OutputStreamWriter outputWriter=new OutputStreamWriter(fileOut);
-		 outputWriter.write(sRithmHeader);
-		 outputWriter.write(sDealsHeader);
-		 outputWriter.write("\n");
-		 outputWriter.close();
-
-		 } catch (Exception e) {
-		 e.printStackTrace();
-		 }
-		 */
-
-
 
 
 		// проверяем доступность SD
@@ -801,57 +665,115 @@ public class MainActivity extends Activity
 			return;
 		}
 
-		// получаем путь к SD
-		File sdPath = Environment.getExternalStorageDirectory();
-		// добавляем свой каталог к пути
-		sdPath = new File("storage/0000-0000" + "/" + "111/");//DIR_SD);
-		// создаем каталог
-		sdPath.mkdirs();
-		// формируем объект File, который содержит путь к файлу
-		File sdFile = new File(sdPath, "1");//FILENAME_SD);
-		try
-		{
-			// открываем поток для записи
-			BufferedWriter bw = new BufferedWriter(new FileWriter(sdFile));
-			// пишем данные
-			bw.write("Содержимое файла на SD");
-			// закрываем поток
-			bw.close();
-			//?? Log.d(LOG_TAG, "Файл записан на SD: " + sdFile.getAbsolutePath());
-		}
-		catch (IOException e)
-		{
-			Toast.makeText(getApplicationContext(),
-						   //Environment.getExternalStorageDirectory().getAbsolutePath()+   
-						   "Exception: " + e.toString(), Toast.LENGTH_LONG).show();
-		}
-	}
-	//>>
+		SharedPreferences prefs = getSharedPreferences(Data.SET_AMETARITHM_FILE_NAME, Context.MODE_PRIVATE);
 
-	//<<загрузить из файла (новые и изменения старых)
-	public void onClickLoadFromFile(View view)
-	{
+		File myPath = //new File( fileLoad);// 
+			new File(Environment.getExternalStorageDirectory().toString());
+		File myFile = new File(myPath, "MySharedPreferences");
 
 		try
 		{
-			// открываем поток для чтения
-			BufferedReader br = new BufferedReader(new InputStreamReader(
-													   openFileInput("storage\\0000-0000\\111\\1")));
-			String str = "";
-			// читаем содержимое
-			while ((str = br.readLine()) != null)
+			if (!myPath.exists()) myPath.mkdir();
+			FileWriter fw = new FileWriter(myFile);
+			PrintWriter pw = new PrintWriter(fw);
+
+			Map<String,?> prefsMap = prefs.getAll();
+
+			for (Map.Entry<String,?> entry : prefsMap.entrySet())
 			{
-				//Log.d(LOG_TAG, str);
-				Toast.makeText(getApplicationContext(),
-							   str, Toast.LENGTH_LONG).show();
+				pw.println(entry.getKey() + ": " + entry.getValue().toString());            
 			}
+
+			pw.close();
+			fw.close();
+			Toast.makeText(getApplicationContext(),
+						   "Сохранено в: " + myFile, Toast.LENGTH_LONG).show();
+
 		}
 		catch (Exception e)
 		{
 			Toast.makeText(getApplicationContext(),
 						   "Exception: " + e.toString(), Toast.LENGTH_LONG).show();
-
 		}
+	}
+	//>>
+	private static final int FILE_LOAD_CODE = 0;
+    private String fileLoad="";
+	private void showFileChooser(int nmode)
+	{
+		Intent intent = new Intent(Intent.ACTION_GET_CONTENT); 
+		intent.setType("*/*"); 
+		intent.addCategory(Intent.CATEGORY_OPENABLE);
+
+		try
+		{
+			startActivityForResult(
+                Intent.createChooser(intent, "Select a File"),
+                FILE_LOAD_CODE);
+		}
+		catch (android.content.ActivityNotFoundException ex)
+		{
+			// Potentially direct the user to the Market with a Dialog
+			Toast.makeText(this, "Please install a File Manager.", 
+						   Toast.LENGTH_SHORT).show();
+		}
+	}
+	/**/
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data)
+	{
+		switch (requestCode)
+		{
+			case FILE_LOAD_CODE:
+				if (resultCode == RESULT_OK)
+				{
+					// Get the Uri of the selected file 
+					Uri uri = data.getData();
+
+					File file = new File(uri.getPath());
+					fileLoad =  uri.getPath().toString();// FileUtils .getPath(this, uri);
+					String sPref = "";
+
+					try
+					{
+						if (file.exists())
+						{
+
+							FileInputStream fis;
+
+							try
+							{
+								fis = openFileInput(fileLoad);// "test.txt");
+								fis.read(sPref.getBytes());//readString.getBytes());
+								fis.close();
+								Toast.makeText(this, sPref,
+											   Toast.LENGTH_LONG).show();
+
+
+							}
+							catch (IOException e)
+							{
+								e.printStackTrace();
+
+							} 
+						}
+
+
+
+					}
+					catch (Exception e)
+					{Toast.makeText(this, e.toString(),
+									Toast.LENGTH_LONG).show();
+					}}
+				break;
+		}
+		super.onActivityResult(requestCode, resultCode, data);
+	}
+	/**/
+	//<<загрузить из файла (новые и изменения старых)
+	public void onClickLoadFromFile(View view)
+	{
+		showFileChooser(FILE_LOAD_CODE);
 	}
 	//>>
 	//<<удалить тренировку
@@ -862,48 +784,27 @@ public class MainActivity extends Activity
 		alert.setTitle("Удаление");
 		alert.setMessage("Удалить тренировку " + Data.aMetaRithm[Gl_SelectedIndex][0][0][0][1] + "?");
 
-		//final EditText input = new EditText(this);
-		//input.setText( "КОПИЯ - " + Data.aMetaRithm[ Gl_SelectedIndex][0][0][0][1]);
-		//alert.setView(input);
 
 		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface dialog, int whichButton)
 				{
-					//String sNewName = input.getText().toString();
-					//  		
+
 					String[][][][][] array = Data.aMetaRithm; // Original array.
 					String[][][][][] acopy = new String[array.length - 1][][][][]; // Array which will contain the result.
-					//int index = Gl_SelectedIndex; // Remove the value .
-                    // Copy the elements at the left of the index.
+
 					System.arraycopy(array, 0, acopy, 0, Gl_SelectedIndex);
-                    // Copy the elements at the right of the index.
+
 					System.arraycopy(array, Gl_SelectedIndex + 1, acopy, Gl_SelectedIndex, array.length - Gl_SelectedIndex - 1);
 					Gl_SelectedIndex = 0;
 					Gl_SelectedID = acopy[Gl_SelectedIndex][0][0][1][1];
 					Data.aMetaRithm = acopy;
-					//запомнить настройки
-					SharedPreferences.Editor editor = Data.mSettings.edit();
-					editor.putInt(Data.SET_TRAIN_INDEX,  Gl_SelectedIndex);
-					editor.putString(Data.SET_TRAIN_ID,  Gl_SelectedID);
-					editor.apply();
-					editor = Data.mSettingsData.edit();
-					editor.putString(Data.SET_AMETARITHM, Data.sAMetaRithm);
 					Data.aRithm = Data.aMetaRithm[Gl_SelectedIndex];
-					//Data.aRithm[3][0][ii][3] = alParametersV.get(ii - 1);
-					String ss = Data.aMetaRithm2TechString(Data.aMetaRithm);
-					Data.sAMetaRithm = ss;
-					ss = Data.aRithm2TechString(Data.aRithm);
-					Data.sARithm = ss;
-					editor.putString(Data.SET_ARITHM, Data.sARithm);
-					//editor.putString(Data.SET_ARITHM, Data.sARithm);
-					//editor.putString(Data.SET_ADEALS100, Data.sADeals100);
-					editor.apply();
-					fillSpinner();
-					spinner.setSelection(Gl_SelectedIndex);
+					//запомнить настройки
+					setSettings(""); //newform saveSettings();
+                    //
+					getSettings("FROM_ARRAYS");  //?????????
 					Toast.makeText(getApplicationContext(),
-								   "Тренировка удалена" , Toast.LENGTH_LONG).show();
-
-
+								   "Тренировка удалена" , Toast.LENGTH_SHORT).show();
 				}
 			});
 
@@ -928,19 +829,37 @@ public class MainActivity extends Activity
 		alert.setMessage("Введите наименование новой тренировки:");
 
 		final EditText input = new EditText(this);
-		input.setText("КОПИЯ - " + Data.aMetaRithm[Gl_SelectedIndex][0][0][0][1]);
+		input.setText(sMakeUniqueWord(Data.aMetaRithm[Gl_SelectedIndex][0][0][0][1], "КОПИЯ", 0));
 		alert.setView(input);
 
 		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface dialog, int whichButton)
 				{
 					String sNewName = input.getText().toString();
-					String aNewName[] = {sNewName};
 					//добавляем клон в массив
 					String[][][][][] acopy = new String[Data.aMetaRithm.length + 1][][][][];
-					System.arraycopy(Data.aMetaRithm, 0, acopy, 0, Gl_SelectedIndex + 1);
-					//System.arraycopy(Data.aMetaRithm, Gl_SelectedIndex, acopy, Gl_SelectedIndex+1,1);
-					acopy[Gl_SelectedIndex + 1] = new String[Data.aMetaRithm[Gl_SelectedIndex].length][][][];
+				    for (int i = 0; i < Gl_SelectedIndex + 1;i++)
+					{
+						acopy[i] = new String[Data.aMetaRithm[i].length][][][];
+						for (int i1=0;i1 < Data.aMetaRithm[i].length;i1++)
+						{
+							acopy[i][i1] = new String[Data.aMetaRithm[i][i1].length][][];
+							for (int i2=0;i2 < Data.aMetaRithm[i][i1].length;i2++)
+							{
+								acopy[i][i1][i2] = new String[Data.aMetaRithm[i][i1][i2].length][];
+								for (int i3=0;i3 < Data.aMetaRithm[i][i1][i2].length;i3++)
+								{
+									acopy[i][i1][i2][i3] = new String[Data.aMetaRithm[i][i1][i2][i3].length];
+									for (int i4=0;i4 < Data.aMetaRithm[i][i1][i2][i3].length;i4++)
+									{
+										acopy[i][i1][i2][i3][i4] = Data.aMetaRithm[i][i1][i2][i3][i4] ;
+									}
+								}
+							}
+						}
+					} 
+
+				    acopy[Gl_SelectedIndex + 1] = new String[Data.aMetaRithm[Gl_SelectedIndex].length][][][];
 					for (int i1=0;i1 < Data.aMetaRithm[Gl_SelectedIndex].length;i1++)
 					{
 						acopy[Gl_SelectedIndex + 1][i1] = new String[Data.aMetaRithm[Gl_SelectedIndex][i1].length][][];
@@ -957,33 +876,88 @@ public class MainActivity extends Activity
 							}
 						}
 					}
-					acopy[Gl_SelectedIndex + 1][0][0][1][1] = acopy[Gl_SelectedIndex][0][0][1][1] + "_copy";
+					acopy[Gl_SelectedIndex + 1][0][0][1][1] = sMakeUniqueWord(acopy[Gl_SelectedIndex][0][0][1][1] , "copy", 1);
 					if (Data.aMetaRithm.length > (Gl_SelectedIndex + 1))
-						System.arraycopy(Data.aMetaRithm, Gl_SelectedIndex + 1, acopy, Gl_SelectedIndex + 2, acopy.length - Gl_SelectedIndex - 2);
-					System.arraycopy(aNewName, 0, acopy[Gl_SelectedIndex + 1][0][0][0], 1, 1);
+					{
+						for (int i = Gl_SelectedIndex + 2; i < Data.aMetaRithm.length + 1;i++)
+						{
+							acopy[i] = new String[Data.aMetaRithm[i - 1].length][][][];
+							for (int i1=0;i1 < Data.aMetaRithm[i - 1].length;i1++)
+							{
+								acopy[i][i1] = new String[Data.aMetaRithm[i - 1][i1].length][][];
+								for (int i2=0;i2 < Data.aMetaRithm[i - 1][i1].length;i2++)
+								{
+									acopy[i][i1][i2] = new String[Data.aMetaRithm[i - 1][i1][i2].length][];
+									for (int i3=0;i3 < Data.aMetaRithm[i - 1][i1][i2].length;i3++)
+									{
+										acopy[i][i1][i2][i3] = new String[Data.aMetaRithm[i - 1][i1][i2][i3].length];
+										for (int i4=0;i4 < Data.aMetaRithm[i - 1][i1][i2][i3].length;i4++)
+										{
+											acopy[i][i1][i2][i3][i4] = Data.aMetaRithm[i - 1][i1][i2][i3][i4] ;
+										}
+									}
+								}
+							}
+						} 
+					}	
+					acopy[Gl_SelectedIndex + 1][0][0][0][1] = sNewName;// strinaNewName[0];
 					Gl_SelectedIndex = Gl_SelectedIndex + 1;
 					Gl_SelectedID = acopy[Gl_SelectedIndex][0][0][1][1];
 					Data.aMetaRithm = acopy;
-					//запомнить настройки
-					SharedPreferences.Editor editor = Data.mSettings.edit();
-					editor.putInt(Data.SET_TRAIN_INDEX,  Gl_SelectedIndex);
-					editor.putString(Data.SET_TRAIN_ID,  Gl_SelectedID);
-					editor.apply();
-					editor = Data.mSettingsData.edit();
-					editor.putString(Data.SET_AMETARITHM, Data.sAMetaRithm);
 					Data.aRithm = Data.aMetaRithm[Gl_SelectedIndex];
-					//Data.aRithm[3][0][ii][3] = alParametersV.get(ii - 1);
-					String ss = Data.aMetaRithm2TechString(Data.aMetaRithm);
-					Data.sAMetaRithm = ss;
-					ss = Data.aRithm2TechString(Data.aRithm);
-					Data.sARithm = ss;
-					editor.putString(Data.SET_ARITHM, Data.sARithm);
-					//editor.putString(Data.SET_ADEALS100, Data.sADeals100);
-					editor.apply();
-					fillSpinner();
+					//запомнить настройки
+					setSettings(""); //newform saveSettings();
+					getSettings("FROM_ARRAYS"); //?????????????
+
 					spinner.setSelection(Gl_SelectedIndex);
+					getParameters();
 					Toast.makeText(getApplicationContext(),
-								   "Тренировка скопирована" , Toast.LENGTH_LONG).show();
+								   "Тренировка скопирована" , Toast.LENGTH_SHORT).show();
+				}
+			});
+
+		alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int whichButton)
+				{
+					// Canceled.
+				}
+			});
+
+		alert.show();
+
+
+	}
+	//>>
+	//<<Изменить формулу отбора тренировки в список на текущий день
+	public void onClickDisabledEdit(View view)
+	{
+
+		AlertDialog.Builder alert = new AlertDialog.Builder(this);
+
+		alert.setTitle(Data.aMetaRithm[Gl_SelectedIndex][0][0][0][1]);
+		alert.setMessage("Введите формулу отбора:");
+
+		final EditText input = new EditText(this);
+		input.setText(Data.aMetaRithm[Gl_SelectedIndex][1][0][0][1]);
+
+		alert.setView(input);
+
+		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int whichButton)
+				{
+
+					String sNewName = input.getText().toString();
+					Data.aMetaRithm[Gl_SelectedIndex][1][0][0][1] = sNewName;
+
+					//запомнить настройки
+					setSettings(""); 
+
+					getSettings("FROM_ARRAYS"); //????????????
+
+					spinner.setSelection(Gl_SelectedIndex);
+					getParameters();
+					Toast.makeText(getApplicationContext(),
+								   "Формула изменена" , Toast.LENGTH_SHORT).show();
 				}
 			});
 
@@ -1008,26 +982,79 @@ public class MainActivity extends Activity
 		else  tvTextToSpeek.setText("nnnnno") ;
     }
 
-
-	//=======================
-
-	// 2do: ПРИВЕСТИ ФОРМУ В НОРМАЛЬНЫЙ ВИД !!! (get set save)
-
-	//
-	public void setSlectedIndex()
+    protected void getSettings(String sFile)
 	{
-		//запомнить индекс выбранной тренировки
+		//взять параметры из настроек/файла(если sFile непуст) или из умолчаний. 
+		//записать их в массивы и переменные. 
+		//заполнить спиннер(+выбранный индекс даже если он запрещен к выбору) 
+		//нарисовать на форме методом выбора из спиннера (delay repeat tags parameters.). 
+		//----------------------------
+		Data.mSettings = getSharedPreferences(Data.SET_FILE_NAME, Context.MODE_PRIVATE);
+        Data.mSettingsData = getSharedPreferences(Data.SET_AMETARITHM_FILE_NAME, Context.MODE_PRIVATE);
+		if (sFile.isEmpty())
+		{
+			//взять параметры из настроек или из умолчаний. 
+			if   (Data.mSettingsData.contains(Data.SET_AMETARITHM))
+			{
+				Data.sAMetaRithm = Data.mSettingsData.getString(Data.SET_AMETARITHM, "");
+				Data.sADeals100 = Data.mSettingsData.getString(Data.SET_ADEALS100, "");
+			}
+			else
+			{
+				//else из модуля
+				String ss = Data.aMetaRithm2TechString(Data.aMetaRithmInit);
+				Data.sAMetaRithm = ss;
+				ss = Data.aRithm2TechString(Data.aDeals100Init);
+				Data.sADeals100 = ss;
+			}		
+			Data.mSplit5d(Data.sAMetaRithm);
+        }
+
+		//выбор тренировки		
+		fillSpinner();
+		if (Data.mSettings.contains(Data.SET_TRAIN_INDEX))
+			spinner.setSelection(aliSpinner.indexOf(Data.mSettings.getInt(Data.SET_TRAIN_INDEX, 0)));
+	}
+
+
+    protected void setSettings(String sFile)
+	{
+		//из формы в массивы и переменные и в настройки 
+		//и если sFile непуст то еще и в файл. 
+		//---------------------------
+		//if (sFile.isEmpty()) {
+		//считываем измененные (мб) параметры
+		int ii=1;
+		for (int i=0; i < alParametersFull.toArray().length - 1; i++)
+		{ 
+			if (Integer.parseInt(alParametersFullInd.get(i)) == Gl_SelectedIndex)
+			{
+				edtCurr = findViewById(fget_paramTextId(1 + i));	
+				alParametersFullV.set(i, edtCurr.getText().toString().trim());
+				alParametersV.set(ii - 1, edtCurr.getText().toString().trim());
+
+				//заменим значение параметра в массиве, чтобы сохранилось в настройках
+				Data.aMetaRithm[Gl_SelectedIndex][3][0][ii][3] = alParametersFullV.get(i);
+				Data.aRithm = Data.aMetaRithm[Gl_SelectedIndex];
+				Data.aRithm[3][0][ii][3] = alParametersV.get(ii - 1);
+				ii += 1;
+			}
+		}
+
+		//запомнить настройки
+		Data.aMetaRithm[Gl_SelectedIndex][1][0][2][1] = tvDelay.getText().toString();
+		Data.aMetaRithm[Gl_SelectedIndex][1][0][1][1] = tvRepeat.getText().toString();
+
+		String ss = Data.aMetaRithm2TechString(Data.aMetaRithm);
+		Data.sAMetaRithm = ss;
+		Data.aRithm = Data.aMetaRithm[Gl_SelectedIndex];
+		ss = Data.aRithm2TechString(Data.aRithm);
+		Data.sARithm = ss;
 		SharedPreferences.Editor editor = Data.mSettings.edit();
 		editor.putInt(Data.SET_TRAIN_INDEX,  Gl_SelectedIndex);
 		editor.putString(Data.SET_TRAIN_ID,  Gl_SelectedID);
-		editor.apply();
-	}
 
-	public void setAllSettings()
-	{
-		//запомнить настройки
-		setSlectedIndex();
-		SharedPreferences.Editor editor = Data.mSettings.edit();
+		editor.apply();
 		editor = Data.mSettingsData.edit();
 		editor.putString(Data.SET_AMETARITHM, Data.sAMetaRithm);
 		editor.putString(Data.SET_ARITHM, Data.sARithm);
@@ -1035,62 +1062,52 @@ public class MainActivity extends Activity
 		editor.apply();
 	}
 
-	protected void getSelectedIndex()
+	protected void parseSettings()
 	{
-		if   (Data.mSettingsData.contains(Data.SET_TRAIN_INDEX))
+		Data.aRithm = Data.aMetaRithm[Gl_SelectedIndex];
+		Data.sARithm = Data.aRithm2TechString(Data.aRithm);
+		//распарсить массивы и пр. 
+		//вызывается перед передачей в сервис, сохраняться в базе не должно	 
+		//---------------------------
+		
+		//парсим по параметрам количества подходов, длительность и пр
+		for (int i=0; i < Data.aRithm[3][0].length - 1; i++)
+			try
+			{
+				GlParser1.setVariable(Data.aRithm[3][0][i + 1][0].trim(), Double.parseDouble(Data.aRithm[3][0][i + 1][3].trim()));
+			}
+			catch (Exception e)
+			{}
+		//наименование как парсить ??
+
+		for (int i=0; i < Data.aRithm[10].length; i++)
 		{
-			Gl_SelectedIndex = Integer.parseInt(Data.mSettingsData.getString(Data.SET_TRAIN_INDEX, ""));
-			//Gl_SelectedID = Data.mSettingsData.getString(Data.SET_TRAIN_ID, "");
+			//sn = String.valueOf(Integer.parseInt(Data.aRithm[10][0][0][0]) );
+			try
+			{
+				//кол-во повторений
+				Data.aRithm[10][i][0][0] = String.valueOf((int)GlParser1.Parse(Data.aRithm[10][i][0][0]));
+				Data.aMetaRithm[Gl_SelectedIndex][10][i][0][0] = Data.aRithm[10][i][0][0];
+
+				//длительность (в ритме, а не в деле)
+				Data.aRithm[10][i][1][0] = String.valueOf(GlParser1.Parse(Data.aRithm[10][i][1][0]));
+				Data.aMetaRithm[Gl_SelectedIndex][10][i][1][0] = Data.aRithm[10][i][1][0];
+
+				//дисперсия (в ритме, а не в деле)
+				Data.aRithm[10][i][2][0] = String.valueOf(GlParser1.Parse(Data.aRithm[10][i][2][0]));
+				Data.aMetaRithm[Gl_SelectedIndex][10][i][2][0] = Data.aRithm[10][i][2][0];
+
+				//если сразу задана фраза а не ссылка на дело
+				Data.aRithm[10][i][3][1] = GlParser1.SParse(Data.aRithm[10][i][3][1]);
+				Data.aMetaRithm[Gl_SelectedIndex][10][i][3][1] = Data.aRithm[10][i][3][1];
+
+			}
+			catch (Exception e)
+			{}  
 		}
-		else
-		{
-			Gl_SelectedIndex = Data.Gl_SelectedIndexInit;
-			//Gl_SelectedID = Data.mSettingsData.getString(Data.SET_TRAIN_ID, "");
-		}
-		//??
-		//  Gl_SelectedIndex = spinner.getSelectedItemPosition();
+		String ss = Data.aMetaRithm2TechString(Data.aMetaRithm);
+		Data.sAMetaRithm = ss;
+		ss = Data.aRithm2TechString(Data.aRithm);
+		Data.sARithm = ss;
 	}
-
-	protected void getAllSettings()
-	{
-        getSelectedIndex();
-		if   (Data.mSettingsData.contains(Data.SET_AMETARITHM))
-		{
-			Data.sAMetaRithm = Data.mSettingsData.getString(Data.SET_AMETARITHM, "");
-			Data.sADeals100 = Data.mSettingsData.getString(Data.SET_ADEALS100, "");
-		}
-		else
-		{
-			//else из модуля
-			String ss = Data.aMetaRithm2TechString(Data.aMetaRithmInit);
-			Data.sAMetaRithm = ss;
-
-			//test
-			ss = Data.aRithm2TechString(Data.aDeals100Init);
-			Data.sADeals100 = ss;
-
-		}		
-
-
-
-		//??ВСЕ НИЖЕ С ФОРМЫ А ВСЕ ВЫШЕ ИЗ СОХРАНЕННОГО ФАЙЛА
-		//СДЕЛАТЬ ЕДИНООБРАЗНО!!!!
-
-		// Gl_SelectedIndex = spinner.getSelectedItemPosition();
-		Data.mSplit5d(Data.sAMetaRithm);
-		/*
-		 //начитка тэгов
-		 setTags();
-
-		 //выбор тренировки		
-		 //fillSpinner();
-		 //if (Data.mSettings.contains(Data.SET_TRAIN_INDEX))
-		 //	spinner.setSelection(aliSpinner.indexOf(Data.mSettings.getInt(Data.SET_TRAIN_INDEX, 0)));
-		 //tvTextToSpeek.setText(Data.aMetaRithm[Gl_SelectedIndex][2][0][0][1]);
-
-		 //начитка параметров
-		 setParameters();
-		 */
-	}
-
 }

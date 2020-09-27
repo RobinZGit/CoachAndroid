@@ -19,6 +19,17 @@ android:layout_height="match_parent">
 		android:textSize="60sp"
 		android:background ="#fff999"
 	/>
+	<TextView
+		android:id="@+id/idTxtDelayCap"
+		android:inputType="textMultiLine" 
+		android:lines="1" 
+		android:minLines="1"
+		android:maxLines="1"
+		android:layout_height="wrap_content" 
+		android:layout_width="match_parent" 
+		android:scrollbars="vertical" 
+		android:text ="Отложить начало на (сек.):"
+	/>
 	<EditText
 		android:id="@+id/idTxtDelay"
 		android:inputType="textMultiLine" 
@@ -29,6 +40,17 @@ android:layout_height="match_parent">
 		android:layout_width="match_parent" 
 		android:scrollbars="vertical" 
 		android:hint = "Отложить начало на (сек., по умолчанию 5 сек):"
+	/>
+	<TextView
+		android:id="@+id/idTxtRepeatCap"
+		android:inputType="textMultiLine" 
+		android:lines="1" 
+		android:minLines="1"
+		android:maxLines="1"
+		android:layout_height="wrap_content" 
+		android:layout_width="match_parent" 
+		android:scrollbars="vertical" 
+		android:text ="Повторить тренировку (раз):"
 	/>
 	<EditText
 		android:id="@+id/idTxtRepeat"
@@ -73,31 +95,7 @@ android:layout_height="match_parent">
 		android:onClick = "onClickFinish"
 	/>
 	<Button
-		android:id="@+id/btnEdit"
-		android:gravity="top|left" 
-		android:layout_width="match_parent"
-		android:layout_height="wrap_content"
-		android:text="Редактор тренировок"
-		android:onClick="onClickEdit"
-	/>
-	<Button
-		android:id="@+id/btnEdit"
-		android:gravity="top|left" 
-		android:layout_width="match_parent"
-		android:layout_height="wrap_content"
-		android:text="Сохранить в файл все тренировки"
-		android:onClick="onClickSaveToFile"
-	/>
-	<Button
-		android:id="@+id/btnEdit"
-		android:gravity="top|left" 
-		android:layout_width="match_parent"
-		android:layout_height="wrap_content"
-		android:text="Загрузить тренировки из файла (новые и изменения в старых) "
-		android:onClick="onClickLoadFromFile"
-	/>
-	<Button
-		android:id="@+id/btnEdit"
+		android:id="@+id/btnClone"
 		android:gravity="top|left" 
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
@@ -105,13 +103,46 @@ android:layout_height="match_parent">
 		android:onClick="onClickClone"
 	/>
 	<Button
-		android:id="@+id/btnEdit"
+		android:id="@+id/btnDel"
 		android:gravity="top|left" 
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
 		android:text="Удалить тренировку"
 		android:onClick="onClickDel"
 	/>
+	<Button
+		android:id="@+id/btnSaveAll"
+		android:gravity="top|left" 
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:text="Сохранить в файл все тренировки"
+		android:onClick="onClickSaveToFile"
+	/>
+	<Button
+		android:id="@+id/btnLoad"
+		android:gravity="top|left" 
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:text="Загрузить тренировки из файла (новые и изменения в старых) "
+		android:onClick="onClickLoadFromFile"
+	/>
+	<Button
+		android:id="@+id/btnDisablededit"
+		android:gravity="top|left" 
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:text="Изменить формулу отбора тренировки в список на текущий день"
+		android:onClick="onClickDisabledEdit"
+	/>
+	<Button
+		android:id="@+id/btnEdit"
+		android:gravity="top|left" 
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:text="Редактор тренировок"
+		android:onClick="onClickEdit"
+	/>
+
 	<Button
 		android:id="@+id/btnTest"
 		android:gravity="top|left" 
@@ -137,6 +168,12 @@ android:layout_height="match_parent">
 		android:layout_height="wrap_content"
 		android:text="Включая исключенные"
 		android:onClick = "onClickChkAll"
+	/>
+	<ProgressBar
+		android:id="@+id/progressBar"
+		android:visibility="invisible"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content" 
 	/>
 </LinearLayout>
 </ScrollView>
