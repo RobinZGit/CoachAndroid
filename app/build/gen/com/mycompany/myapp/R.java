@@ -35,6 +35,8 @@ public final class R {
         public static final int idTxtRepeatCap=0x7f060009;
         public static final int linearLayout=0x7f060005;
         public static final int linearLayoutEdit=0x7f060000;
+        public static final int linearLayoutParams=0x7f060018;
+        public static final int linearLayoutTags=0x7f060017;
         public static final int progressBar=0x7f060016;
         public static final int scrollMain=0x7f060004;
     }

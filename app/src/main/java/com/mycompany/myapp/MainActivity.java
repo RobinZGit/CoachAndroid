@@ -72,23 +72,12 @@ public class MainActivity extends Activity
 	ArrayList<Integer> aliSpinner = new ArrayList<Integer>();
 	ArrayList<String> alTags = new ArrayList<String>();
 
-	ArrayList<String> alParameters = new ArrayList<String>();
-	ArrayList<String> alParametersV = new ArrayList<String>();
-	ArrayList<String> alParametersBrief = new ArrayList<String>();
-	ArrayList<String> alParametersType = new ArrayList<String>();
-	ArrayList<String> alParametersFull = new ArrayList<String>();
-	ArrayList<String> alParametersFullV = new ArrayList<String>();
-	ArrayList<String> alParametersFullV2 = new ArrayList<String>();
-	ArrayList<String> alParametersFullBrief = new ArrayList<String>();
-	ArrayList<String> alParametersFullType = new ArrayList<String>();
-	ArrayList<String> alParametersFullInd = new ArrayList<String>();
-
-
 	int Gl_SelectedIndex = 0;
 	String Gl_SelectedID = "";
 
 	private LinearLayout layout;
-	private LinearLayout layout0;
+	private LinearLayout layoutParams0;
+	private LinearLayout layoutTags;
 	private Button btnMain;
 	private Button btnFinish;
 	private Button btnTest;
@@ -187,7 +176,7 @@ public class MainActivity extends Activity
 	@Override
 	protected void onDestroy()
 	{
-		setSettings(""); //newform saveSettings();
+		setSettings(""); 
 		// TODO: Implement this method
 		super.onDestroy();
 	}
@@ -208,6 +197,8 @@ public class MainActivity extends Activity
 		layout.setEnabled(false);
 		ProgressBar progressBar = findViewById(R.id.progressBar);
 		progressBar.setVisibility(ProgressBar.VISIBLE);
+		layoutTags = findViewById(R.id.linearLayoutTags);
+		layoutParams0 = findViewById(R.id.linearLayoutParams);
 
 		progressBar.setVisibility(ProgressBar.INVISIBLE);
 		tvTextToSpeek = findViewById(R.id.idTextsToSpeek);
@@ -239,12 +230,13 @@ public class MainActivity extends Activity
 			});
 
 
-		getSettings("");//!!!newform!!    fillActivity();
+		getSettings("");
         layout.setEnabled(true);
 		progressBar.setVisibility(ProgressBar.INVISIBLE);
+		
 		//проверки целостности бд
-		String s="";//!!  замедляет вход     check();
-		//====== !!! перенести на кнопку или перед закрытием ..
+		String s=check();
+		//
 
 		if (s.length() > 0)
 		{
@@ -300,7 +292,7 @@ public class MainActivity extends Activity
 								fillSpinner();
 							}
 						});
-					layout.addView(cb, lp);
+					layoutTags.addView(cb, lp);
 				}
 			}
 		}
@@ -310,132 +302,36 @@ public class MainActivity extends Activity
 	protected void getParameters()
 	{
 
-		layout0 = findViewById(R.id.linearLayout);
-
-		for (int i=0; i < alParametersFull.toArray().length + 1; i++)
-		{ 
-		    View v = findViewById(1 + fget_paramTextId(i));
-			if (v != null) layout0.removeView(v);
-			v = findViewById(1 + fget_paramLabelId(i));
-			if  (v != null) layout0.removeView(v);
-		}
-
-		alParameters.clear(); //при редактировании трен параметры могут добавляться. но не будут удаляться
-		alParametersV.clear(); 
-		alParametersBrief.clear();
-		alParametersType.clear();
-
-		alParametersFull.clear(); //при редактировании трен параметры могут добавляться. но не будут удаляться
-		alParametersFullV.clear(); 
-		alParametersFullBrief.clear();
-		alParametersFullType.clear();
-		alParametersFullInd.clear();
-
-		String s0 ="";
-		int nPCnt =-1;
-		String[][] aS0;
-		for (int ind=0; ind < Data.aMetaRithm.length; ind++)
-		{
-			aS0 = Data.aMetaRithm[ind][3][0];
-			if (aS0.length > 1)
-				for (int j = 1; j < aS0.length; j++)
-
-					if (!(aS0[j][2].trim() == ""))
-					{
-						if (ind == Gl_SelectedIndex)
-						{	
-							nPCnt++;
-							s0 = aS0[j][2];
-							alParameters.add(s0);
-							s0 = aS0[j][3];
-							alParametersV.add(s0);
-							s0 = aS0[j][0];
-							alParametersBrief.add(s0);
-							s0 = aS0[j][1];
-							alParametersType.add(s0);
-						}	
-						s0 = aS0[j][2];
-						alParametersFull.add(s0);
-						s0 = aS0[j][3];
-						alParametersFullV.add(s0);
-						s0 = aS0[j][0];
-						alParametersFullBrief.add(s0);
-						s0 = aS0[j][1];
-						alParametersFullType.add(s0);
-						alParametersFullInd.add(String.valueOf(ind));
-					}
-		}
-		// for (int i = 0; i<1000; i++){//до 1000 контролов для параметров тренировки
-		//	   layout.removeView();
-		//	}
+		layoutParams0 = findViewById(R.id.linearLayoutParams);
+		layoutParams0.removeAllViews();
 		//
-		/* newform*/
-		if ((alParameters.toArray().length > 0)
-			&& (findViewById(fget_paramTextId(1) + 2) == null)
-			)
-		{
-			TextView tv = new TextView(this);
-			LayoutParams lp00 = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-			tv.setText("ПАРАМЕТРЫ ТРЕНИРОВКИ:");
-			tv.setId(fget_paramTextId(1) + 2); 
-			layout0.addView(tv, lp00);
-		}
-
-		for (int i=0;i < alParametersFull.toArray().length; i++)
-		//newform for (int j=0;j<alParametersFullInd.toArray().length;j++)
-		{
-			//		int i = Integer.parseInt( alParametersFullInd.get(j)); //newform
-			//newform
-			//  if (Integer.parseInt(alParametersFullInd.get(i)) == Integer.parseInt(String.valueOf(Gl_SelectedIndex)))
-
-		    if ((!(alParametersFull.get(i).trim() == "")))
-			{
-				if (findViewById(fget_paramLabelId(1 + i)) == null)
+		String[][] aS00 = Data.aMetaRithm[Gl_SelectedIndex][3][0];
+		for (int ind=1; ind < aS00.length; ind++)//1 sic!
+		{ 
+			if (aS00.length > 1)
+				if (!(aS00[ind][2].trim() == ""))
 				{
 					//название параметра
 					TextView tv = new TextView(this);
 					LayoutParams lp0 = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-					tv.setText("  " + alParametersFull.get(i).toLowerCase() + ":");
-					tv.setId(fget_paramLabelId(1 + i));
-					layout0.addView(tv, lp0);
-				}
-				else
-				{
-					TextView tv1 =findViewById(fget_paramLabelId(1 + i));
-					if (Integer.parseInt(alParametersFullInd.get(i)) == Integer.parseInt(String.valueOf(Gl_SelectedIndex)))
-						tv1.setVisibility(View.VISIBLE);
-					else 
-						tv1.setVisibility(View.GONE);
-				}
+					tv.setText("  " + aS00[ind][2].toLowerCase() + ":");
+					tv.setId(fget_paramLabelId(1 + ind));
+					layoutParams0.addView(tv, lp0);
 
-				if (findViewById(fget_paramTextId(1 + i)) == null)
-				{   
-				    //значение параметра
+					//значение параметра
 					EditText edt = new EditText(this);
-					LayoutParams lp0 = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-					edt.setText(alParametersFullV.get(i));
-					edt.setId(fget_paramTextId(1 + i));
-
-					layout0.addView(edt, lp0);
-					// 
+					lp0 = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+					edt.setText(aS00[ind][3]);
+					edt.setId(fget_paramTextId(1 + ind));
+					layoutParams0.addView(edt, lp0);
 				}
-				else
-				{
-					EditText edt1 =findViewById(fget_paramTextId(1 + i));
-					if (Integer.parseInt(alParametersFullInd.get(i))  == Integer.parseInt(String.valueOf(Gl_SelectedIndex)))
-						edt1.setVisibility(View.VISIBLE);
-					else 
-						edt1.setVisibility(View.GONE);
-				}
-			}
 		}
+
 	}
 
 	public void onClickFinish(View view)
 	{
-
 		stopserv("exit");
-
 		this.finish();
 	}
 
@@ -516,7 +412,6 @@ public class MainActivity extends Activity
 				btnMain.setText(TXT_BTN_PAUSED);
 				stopserv("wait");
 				speak("тренировка приостановлена"); 
-
 			}
 		}
 	}
@@ -528,7 +423,10 @@ public class MainActivity extends Activity
 			TTS.speak(s, TextToSpeech.QUEUE_FLUSH, null); 
 		}
 		catch (Exception e)
-		{}
+		{
+			Toast.makeText(getApplicationContext(),
+						   "Exception: " + e.toString(), Toast.LENGTH_LONG).show();
+		}
 	}
 
 	public void onClickChkAll(View view)
@@ -590,7 +488,10 @@ public class MainActivity extends Activity
 					}	
 		    }
 			catch (Exception e)
-			{}		
+			{
+				Toast.makeText(getApplicationContext(),
+							   "Exception: " + e.toString(), Toast.LENGTH_LONG).show();
+			}		
 		}	
 		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, alSpinner);
 		adapter.setDropDownViewResource(android.R.layout.simple_gallery_item);
@@ -718,6 +619,7 @@ public class MainActivity extends Activity
 						   Toast.LENGTH_SHORT).show();
 		}
 	}
+	
 	/**/
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data)
@@ -757,9 +659,6 @@ public class MainActivity extends Activity
 
 							} 
 						}
-
-
-
 					}
 					catch (Exception e)
 					{Toast.makeText(this, e.toString(),
@@ -769,6 +668,7 @@ public class MainActivity extends Activity
 		}
 		super.onActivityResult(requestCode, resultCode, data);
 	}
+	
 	/**/
 	//<<загрузить из файла (новые и изменения старых)
 	public void onClickLoadFromFile(View view)
@@ -776,6 +676,7 @@ public class MainActivity extends Activity
 		showFileChooser(FILE_LOAD_CODE);
 	}
 	//>>
+	
 	//<<удалить тренировку
 	public void onClickDel(View view)
 	{
@@ -799,10 +700,11 @@ public class MainActivity extends Activity
 					Gl_SelectedID = acopy[Gl_SelectedIndex][0][0][1][1];
 					Data.aMetaRithm = acopy;
 					Data.aRithm = Data.aMetaRithm[Gl_SelectedIndex];
+					getSettings("FROM_ARRAYS");  
 					//запомнить настройки
-					setSettings(""); //newform saveSettings();
+					setSettings(""); 
                     //
-					getSettings("FROM_ARRAYS");  //?????????
+
 					Toast.makeText(getApplicationContext(),
 								   "Тренировка удалена" , Toast.LENGTH_SHORT).show();
 				}
@@ -905,9 +807,10 @@ public class MainActivity extends Activity
 					Gl_SelectedID = acopy[Gl_SelectedIndex][0][0][1][1];
 					Data.aMetaRithm = acopy;
 					Data.aRithm = Data.aMetaRithm[Gl_SelectedIndex];
+					getSettings("FROM_ARRAYS"); 
 					//запомнить настройки
-					setSettings(""); //newform saveSettings();
-					getSettings("FROM_ARRAYS"); //?????????????
+					setSettings(""); 
+					
 
 					spinner.setSelection(Gl_SelectedIndex);
 					getParameters();
@@ -949,10 +852,10 @@ public class MainActivity extends Activity
 					String sNewName = input.getText().toString();
 					Data.aMetaRithm[Gl_SelectedIndex][1][0][0][1] = sNewName;
 
+					getSettings("FROM_ARRAYS"); //?????????????
 					//запомнить настройки
 					setSettings(""); 
-
-					getSettings("FROM_ARRAYS"); //????????????
+					//getSettings("FROM_ARRAYS"); //????????????
 
 					spinner.setSelection(Gl_SelectedIndex);
 					getParameters();
@@ -967,10 +870,7 @@ public class MainActivity extends Activity
 					// Canceled.
 				}
 			});
-
 		alert.show();
-
-
 	}
 	//>>
 
@@ -1024,20 +924,21 @@ public class MainActivity extends Activity
 		//---------------------------
 		//if (sFile.isEmpty()) {
 		//считываем измененные (мб) параметры
-		int ii=1;
-		for (int i=0; i < alParametersFull.toArray().length - 1; i++)
+		//int ii=1;
+		String[][] aS00 = Data.aMetaRithm[Gl_SelectedIndex][3][0];
+		for (int i=1; i < aS00.length; i++)
 		{ 
-			if (Integer.parseInt(alParametersFullInd.get(i)) == Gl_SelectedIndex)
+			//if (Integer.parseInt(alParametersFullInd.get(i)) == Gl_SelectedIndex)
 			{
 				edtCurr = findViewById(fget_paramTextId(1 + i));	
-				alParametersFullV.set(i, edtCurr.getText().toString().trim());
-				alParametersV.set(ii - 1, edtCurr.getText().toString().trim());
+				Data.aMetaRithm[Gl_SelectedIndex][3][0][i][3] = edtCurr.getText().toString().trim();
+				//alParametersV.set(ii - 1, edtCurr.getText().toString().trim());
 
 				//заменим значение параметра в массиве, чтобы сохранилось в настройках
-				Data.aMetaRithm[Gl_SelectedIndex][3][0][ii][3] = alParametersFullV.get(i);
+				//Data.aMetaRithm[Gl_SelectedIndex][3][0][ii][3] = alParametersFullV.get(i);
 				Data.aRithm = Data.aMetaRithm[Gl_SelectedIndex];
-				Data.aRithm[3][0][ii][3] = alParametersV.get(ii - 1);
-				ii += 1;
+				//Data.aRithm[3][0][ii][3] = alParametersV.get(ii - 1);
+				//ii += 1;
 			}
 		}
 
@@ -1069,7 +970,7 @@ public class MainActivity extends Activity
 		//распарсить массивы и пр. 
 		//вызывается перед передачей в сервис, сохраняться в базе не должно	 
 		//---------------------------
-		
+
 		//парсим по параметрам количества подходов, длительность и пр
 		for (int i=0; i < Data.aRithm[3][0].length - 1; i++)
 			try
@@ -1077,12 +978,15 @@ public class MainActivity extends Activity
 				GlParser1.setVariable(Data.aRithm[3][0][i + 1][0].trim(), Double.parseDouble(Data.aRithm[3][0][i + 1][3].trim()));
 			}
 			catch (Exception e)
-			{}
+			{
+				//Toast.makeText(getApplicationContext(),
+				//			   e.toString() , Toast.LENGTH_LONG).show();
+				
+			}
 		//наименование как парсить ??
 
 		for (int i=0; i < Data.aRithm[10].length; i++)
 		{
-			//sn = String.valueOf(Integer.parseInt(Data.aRithm[10][0][0][0]) );
 			try
 			{
 				//кол-во повторений
@@ -1103,7 +1007,10 @@ public class MainActivity extends Activity
 
 			}
 			catch (Exception e)
-			{}  
+			{
+				Toast.makeText(getApplicationContext(),
+							   e.toString() , Toast.LENGTH_LONG).show();
+			}  
 		}
 		String ss = Data.aMetaRithm2TechString(Data.aMetaRithm);
 		Data.sAMetaRithm = ss;
