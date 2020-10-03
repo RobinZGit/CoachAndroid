@@ -248,7 +248,13 @@ package com.mycompany.myapp;
 				Date d = new Date();
 				//return new Result(/*d.getYear()*366*31*24*60*60 + d.getMonth()*31*24*60*60 +  d.getDay()*24*60*60 + d.getHours()*60*60 + */d.getMinutes()*60 + d.getSeconds(), r.rest);
 				return new Result(d.getTime(), r.rest);
-		    } 
+		    
+		    } else if (func.equals("bernulli01")) {
+				rithmFunc rf = new rithmFunc();
+				int ri =0;
+				if (rf.bernulli(r.acc)) ri=1; else ri=0;
+		    	return new Result( ri, r.rest);
+			} 
 			else {
 				System.err.println("function '" + func + "' is not defined");
 			}

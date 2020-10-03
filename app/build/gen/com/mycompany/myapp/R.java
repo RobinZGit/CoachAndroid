@@ -24,7 +24,7 @@ public final class R {
         public static final int btnSaveAll=0x7f060010;
         public static final int btnStartStop=0x7f06000c;
         public static final int btnTest=0x7f060014;
-        public static final int chkAll=0x7f060015;
+        public static final int chkToday=0x7f060015;
         public static final int chkTrain=0x7f060006;
         public static final int idTextEditDeals=0x7f060002;
         public static final int idTextEditRithm=0x7f060001;

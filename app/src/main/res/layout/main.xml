@@ -162,12 +162,12 @@ android:layout_height="match_parent">
 	/>
 -->
 	<CheckBox
-		android:id="@+id/chkAll"
+		android:id="@+id/chkToday"
 		android:gravity="top|left" 
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
-		android:text="Включая исключенные"
-		android:onClick = "onClickChkAll"
+		android:text="Только сегодняшние"
+		android:onClick = "onClickChkToday"
 	/>
 	<ProgressBar
 		android:id="@+id/progressBar"

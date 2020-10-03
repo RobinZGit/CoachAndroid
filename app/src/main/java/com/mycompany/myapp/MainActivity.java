@@ -47,7 +47,7 @@ public class MainActivity extends Activity
 
 	@Override
 
-	final String wordSelectedAll = "Все";
+	final String wordSelectedAll = "Все перечисленные ниже (даже если не выбраны)";
 
 	//надписи на кнопке при изменении статуса тренировки (эти же константы используются как ИД статусов - не делать тексты одинаковыми!)   
 	private String TXT_BTN_NOTSTARTED = "Начать тренировку";
@@ -89,9 +89,9 @@ public class MainActivity extends Activity
 	private Button btnLoad;
 
 	private Spinner spinner;
-	private CheckBox chkAll;
+	private CheckBox chkToday;
 
-	private boolean isChkAll = false;
+	private boolean isChkToday = true;
 	private coachUtility Data;
 
 	private MatchParser GlParser1;
@@ -209,7 +209,8 @@ public class MainActivity extends Activity
 		btnEdit = findViewById(R.id.btnEdit);
 		btnTest = findViewById(R.id.btnTest);
 		spinner = findViewById(R.id.chkTrain);	
-		chkAll = findViewById(R.id.chkAll);	
+		chkToday = findViewById(R.id.chkToday);	
+		chkToday.setChecked(isChkToday);
 		btnSaveAll = findViewById(R.id.btnSaveAll);
 		btnClone = findViewById(R.id.btnClone);
 		btnDel = findViewById(R.id.btnDel);
@@ -337,7 +338,11 @@ public class MainActivity extends Activity
 
     public void onClickMain(View view)
 	{
-        //запомнить настройки
+        //запомнить дату выполнения (? перенести в сервис на окончание выполнения ?)
+		Date d =new Date();
+		Data.aMetaRithm[Gl_SelectedIndex][1][0][3][1] = d.toString();
+		//Data.aRithm[1][0][3][1] = d.toString();
+		//запомнить настройки
 		setSettings("");
 
 		//распарсить что можно до передачи в сервис
@@ -345,7 +350,7 @@ public class MainActivity extends Activity
 
 		//при запущенной тренировке (даже на паузе) отключаем реакцию кнопок 
 		spinner.setEnabled(false);
-		chkAll.setEnabled(false);
+		chkToday.setEnabled(false);
 		btnEdit.setEnabled(false);
 		btnSaveAll.setEnabled(false);
 	    btnClone.setEnabled(false);
@@ -429,9 +434,9 @@ public class MainActivity extends Activity
 		}
 	}
 
-	public void onClickChkAll(View view)
+	public void onClickChkToday(View view)
 	{
-		isChkAll = !isChkAll;
+		isChkToday = !isChkToday;
 		getSettings(""); //newform fillActivity();  //ОНО НАДО???
 	}
 
@@ -479,11 +484,22 @@ public class MainActivity extends Activity
 		for (int i = 0; i < Data.aMetaRithm.length; i++)
 		{// начитываем в массив список доступных тренировок
 		    try
-			{
-				if (!(GlParser1.Parse(Data.aMetaRithm[i][1][0][0][1]) > 0) | isChkAll)
+			{  
+				if (!(GlParser1.Parse(Data.aMetaRithm[i][1][0][0][1]) > 0) | !isChkToday)
 					if (IsRithmInSelectedTags(i)) 
-					{
-						alSpinner.add(Data.aMetaRithm[i][0][0][0][1]);
+					{   
+					    String s = "";
+						Date d = new Date();
+						try{
+						  Date d1 = new Date(Date.parse(Data.aMetaRithm[i][1][0][3][1]));
+							if (d.getDate()==d1.getDate()) s = "СЕГОДНЯ ВЫПОЛНЯЛАСЬ - "; else s= "";
+						} catch (Exception e) {
+							s="";
+						}  
+						
+						//if (d.getDate()==d1.getDate()) s = "СЕГОДНЯ ВЫПОЛНЯЛАСЬ - "; else s= "";
+						alSpinner.add( s + 
+						               Data.aMetaRithm[i][0][0][0][1]);
 						aliSpinner.add(i);
 					}	
 		    }
@@ -631,14 +647,14 @@ public class MainActivity extends Activity
 				{
 					// Get the Uri of the selected file 
 					Uri uri = data.getData();
-
-					File file = new File(uri.getPath());
-					fileLoad =  uri.getPath().toString();// FileUtils .getPath(this, uri);
+//   String ss =data.getDataString();
+					File file = new File(uri.toString());// .getPath());
+					fileLoad = file.getAbsolutePath();// Path();// uri.getPath().toString();// FileUtils .getPath(this, uri);
 					String sPref = "";
 
 					try
 					{
-						if (file.exists())
+						if (file.isFile())// .exists())
 						{
 
 							FileInputStream fis;
@@ -684,7 +700,6 @@ public class MainActivity extends Activity
 
 		alert.setTitle("Удаление");
 		alert.setMessage("Удалить тренировку " + Data.aMetaRithm[Gl_SelectedIndex][0][0][0][1] + "?");
-
 
 		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface dialog, int whichButton)
