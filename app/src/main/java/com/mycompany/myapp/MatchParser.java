@@ -64,6 +64,7 @@ package com.mycompany.myapp;
 		String sIf="";
 		String sRet = s1;
 		String sIfName = "iif(";//аналог клипперовского iif
+		String sParseName = "parse(";//парсинг
 		int pos1 = 0;
 		int pos2 = 0;
 		if (s1.indexOf(sIfName) >= 0 ){
@@ -76,7 +77,19 @@ package com.mycompany.myapp;
 			  if (Parse(sIf) > 0.0) sRet = sT; else sRet = sF;
 			} catch (Exception e ) {}  
 		}
-		
+		/*
+		if (s1.indexOf(sParseName) >= 0 ){
+			sIf = s1.substring(sIfName.length(),s1.indexOf(","));
+			pos1 = s1.indexOf(",");
+			pos2 = s1.indexOf(",",pos1+1); //!!но не получится так рекурсивный иф..
+			sT = s1.substring(pos1 + 1, pos2);
+			sF = s1.substring(pos2 + 1,s1.length());
+			try{
+				if (Parse(sIf) > 0.0) sRet = sT; else sRet = sF;
+			} catch (Exception e ) {}  
+		    
+		}
+		*/
 		return sRet;
 	}
 		
@@ -240,10 +253,16 @@ package com.mycompany.myapp;
 			return new Result(r.acc%2, r.rest);
 			} else if (func.equals("остатокделна4")) {
 				return new Result(r.acc%4, r.rest);
+			} else if (func.equals("целоеделна4")) {
+				return new Result(Math.round( r.acc/4), r.rest);
+			} else if (func.equals("целоеделна8")) {
+				return new Result(Math.round( r.acc/8), r.rest);
 		    } else if (func.equals("irandom")) {
 				return new Result(Math.floor( Math.random()*r.acc), r.rest);
 			} else if (func.equals("random")) {
 				return new Result(Math.random()*r.acc, r.rest);
+			} else if (func.equals("round")) {
+				return new Result(Math.round(r.acc), r.rest);
 		    } else if (func.equals("полноевремя")) { // ! не зависит от аргумента
 				Date d = new Date();
 				//return new Result(/*d.getYear()*366*31*24*60*60 + d.getMonth()*31*24*60*60 +  d.getDay()*24*60*60 + d.getHours()*60*60 + */d.getMinutes()*60 + d.getSeconds(), r.rest);

@@ -28,6 +28,7 @@ import java.util.Map;
 import java.net.URI;
 //import java.io.*;//  .FileUriExposedException;
 import android.net.Uri;
+
 /*
  import java.io.ByteArrayOutputStream;
  import java.io.File;
@@ -89,6 +90,7 @@ public class MainActivity extends Activity
 	private Button btnLoad;
 
 	private Spinner spinner;
+	private ListView listView;
 	private CheckBox chkToday;
 
 	private boolean isChkToday = true;
@@ -209,6 +211,8 @@ public class MainActivity extends Activity
 		btnEdit = findViewById(R.id.btnEdit);
 		btnTest = findViewById(R.id.btnTest);
 		spinner = findViewById(R.id.chkTrain);	
+		listView = findViewById(R.id.listView);
+		listView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
 		chkToday = findViewById(R.id.chkToday);	
 		chkToday.setChecked(isChkToday);
 		btnSaveAll = findViewById(R.id.btnSaveAll);
@@ -216,8 +220,9 @@ public class MainActivity extends Activity
 		btnDel = findViewById(R.id.btnDel);
 		btnDisabledEdit = findViewById(R.id.btnDisablededit);
 		btnLoad = findViewById(R.id.btnLoad);
-
+//
 		btnTest.setVisibility(View.GONE); //тестовая кнопка невидима
+		btnLoad.setVisibility(View.GONE); //пока недоделано..
 
 		Gl_CountOfIterations = 0;
 		TTS = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
@@ -234,7 +239,7 @@ public class MainActivity extends Activity
 		getSettings("");
         layout.setEnabled(true);
 		progressBar.setVisibility(ProgressBar.INVISIBLE);
-		
+
 		//проверки целостности бд
 		String s=check();
 		//
@@ -290,7 +295,7 @@ public class MainActivity extends Activity
 							@Override 
 							public void onClick(View v)
 							{
-								fillSpinner();
+								fillRithmList();
 							}
 						});
 					layoutTags.addView(cb, lp);
@@ -477,29 +482,34 @@ public class MainActivity extends Activity
 		return flRet;	
 	}
 
-	public void fillSpinner()
+	public void fillRithmList()
 	{
 		alSpinner.clear();
 		aliSpinner.clear();
 		for (int i = 0; i < Data.aMetaRithm.length; i++)
 		{// начитываем в массив список доступных тренировок
 		    try
-			{  
+			{   boolean flHasParent = hasParent(i);
+				boolean flHasChildren = hasChildren(i);
+			    if (!flHasChildren) //временно - показываем только листы. затем нужно только верхние т.е. (!(hasParent(i) ))
 				if (!(GlParser1.Parse(Data.aMetaRithm[i][1][0][0][1]) > 0) | !isChkToday)
 					if (IsRithmInSelectedTags(i)) 
 					{   
 					    String s = "";
 						Date d = new Date();
-						try{
-						  Date d1 = new Date(Date.parse(Data.aMetaRithm[i][1][0][3][1]));
-							if (d.getDate()==d1.getDate()) s = "СЕГОДНЯ ВЫПОЛНЯЛАСЬ - "; else s= "";
-						} catch (Exception e) {
-							s="";
+						try
+						{
+							Date d1 = new Date(Date.parse(Data.aMetaRithm[i][1][0][3][1]));
+							if (d.getDate() == d1.getDate()) s = "СЕГОДНЯ ВЫПОЛНЯЛАСЬ - "; else s = "";
+						}
+						catch (Exception e)
+						{
+							s = "";
 						}  
-						
+                        if (flHasChildren) s = ">> " + s;
 						//if (d.getDate()==d1.getDate()) s = "СЕГОДНЯ ВЫПОЛНЯЛАСЬ - "; else s= "";
-						alSpinner.add( s + 
-						               Data.aMetaRithm[i][0][0][0][1]);
+						alSpinner.add(s + 
+									  Data.aMetaRithm[i][0][0][0][1]);
 						aliSpinner.add(i);
 					}	
 		    }
@@ -509,17 +519,34 @@ public class MainActivity extends Activity
 							   "Exception: " + e.toString(), Toast.LENGTH_LONG).show();
 			}		
 		}	
-		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, alSpinner);
-		adapter.setDropDownViewResource(android.R.layout.simple_gallery_item);
+		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_single_choice /* .simple_spinner_item*/, alSpinner);
+		//adapter.setDropDownViewResource(android.R.layout.simple_gallery_item);
+		
+//******************??		
 		spinner.setAdapter(adapter);
-
+		
+       // listView.setAdapter(adapter);
+	   
 		OnItemSelectedListener itemSelectedListener = new OnItemSelectedListener() {
 			@Override
 			public void onItemSelected(AdapterView<?> parent, View view, int position, long id)
 			{
-				Gl_SelectedIndex = position;
+				
+				
+				Gl_SelectedIndex = aliSpinner.get( position); //???????
 				Gl_SelectedID = Data.aMetaRithm[Gl_SelectedIndex][0][0][1][1];
-
+				
+				//boolean flHasParent = hasParent(po);
+				/*
+				boolean flHasChildren = hasChildren(Gl_SelectedIndex);
+				if (flHasChildren) {
+					
+					ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, alSpinner);
+					adapter.setDropDownViewResource(android.R.layout.simple_gallery_item);
+					spinner.setAdapter(adapter);
+					
+				}//  .inflate( .//fillSpinner();//onItemSelected(parent,view,position,id);
+                */
 				btnMain.setText(TXT_BTN_NOTSTARTED);
 				tvTextToSpeek.setText(Data.aMetaRithm[Gl_SelectedIndex][2][0][0][1]);
 				tvDelay.setText(Data.aMetaRithm[Gl_SelectedIndex][1][0][2][1]);
@@ -527,6 +554,7 @@ public class MainActivity extends Activity
 				tvTextToSpeek.setText(Data.aMetaRithm[Gl_SelectedIndex][2][0][0][1]);
 				getTags();//?? оно надо  ??
 				getParameters();
+				//spinner.setSelection(position);//111
 
 			}
 
@@ -535,7 +563,9 @@ public class MainActivity extends Activity
 			{		
 			}
 		};
+//*****************
 		spinner.setOnItemSelectedListener(itemSelectedListener);
+		//listView.setOnItemSelectedListener(itemSelectedListener);
 	}
     //
 
@@ -543,6 +573,7 @@ public class MainActivity extends Activity
 	public void onClickEdit(View view)
 	{
 		getSettings(""); 
+		setSettings("");
 		Intent intent = new Intent(MainActivity.this, EditFormActivity.class);
 		startActivity(intent);
 	}
@@ -573,7 +604,7 @@ public class MainActivity extends Activity
 	public void onClickSaveToFile(View view)
 	{
 
-
+        setSettings("");
 		// проверяем доступность SD
 		if (!Environment.getExternalStorageState().equals(
 				Environment.MEDIA_MOUNTED))
@@ -583,7 +614,7 @@ public class MainActivity extends Activity
 		}
 
 		SharedPreferences prefs = getSharedPreferences(Data.SET_AMETARITHM_FILE_NAME, Context.MODE_PRIVATE);
-
+        String spref=Data.prefs2string(prefs);
 		File myPath = //new File( fileLoad);// 
 			new File(Environment.getExternalStorageDirectory().toString());
 		File myFile = new File(myPath, "MySharedPreferences");
@@ -593,14 +624,16 @@ public class MainActivity extends Activity
 			if (!myPath.exists()) myPath.mkdir();
 			FileWriter fw = new FileWriter(myFile);
 			PrintWriter pw = new PrintWriter(fw);
-
+/*
 			Map<String,?> prefsMap = prefs.getAll();
 
 			for (Map.Entry<String,?> entry : prefsMap.entrySet())
 			{
-				pw.println(entry.getKey() + ": " + entry.getValue().toString());            
+				pw.println(entry.getKey() + Data.DELIMITER  + entry.getValue().toString() + Data.DELIMITER);            
 			}
-
+			*/
+			pw.println(spref);            
+			
 			pw.close();
 			fw.close();
 			Toast.makeText(getApplicationContext(),
@@ -635,7 +668,7 @@ public class MainActivity extends Activity
 						   Toast.LENGTH_SHORT).show();
 		}
 	}
-	
+
 	/**/
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data)
@@ -648,8 +681,12 @@ public class MainActivity extends Activity
 					// Get the Uri of the selected file 
 					Uri uri = data.getData();
 //   String ss =data.getDataString();
-					File file = new File(uri.toString());// .getPath());
-					fileLoad = file.getAbsolutePath();// Path();// uri.getPath().toString();// FileUtils .getPath(this, uri);
+					//File file = new File( uri.toString());// .getPath());
+					fileLoad = uri.getEncodedPath();// uri.getPath();// .toString() file.getAbsolutePath();// Path();// uri.getPath().toString();// FileUtils .getPath(this, uri);
+					fileLoad = uri. getQuery();
+					fileLoad = uri.getEncodedUserInfo();
+					fileLoad = "/document/primary:MySharedPreferences";//  "/storage/emulated/0/MySharedPreferences";
+					File file = new File(fileLoad);// 
 					String sPref = "";
 
 					try
@@ -684,7 +721,7 @@ public class MainActivity extends Activity
 		}
 		super.onActivityResult(requestCode, resultCode, data);
 	}
-	
+
 	/**/
 	//<<загрузить из файла (новые и изменения старых)
 	public void onClickLoadFromFile(View view)
@@ -692,7 +729,7 @@ public class MainActivity extends Activity
 		showFileChooser(FILE_LOAD_CODE);
 	}
 	//>>
-	
+
 	//<<удалить тренировку
 	public void onClickDel(View view)
 	{
@@ -817,7 +854,7 @@ public class MainActivity extends Activity
 							}
 						} 
 					}	
-					acopy[Gl_SelectedIndex + 1][0][0][0][1] = sNewName;// strinaNewName[0];
+					acopy[Gl_SelectedIndex + 1][0][0][0][1] = sNewName;
 					Gl_SelectedIndex = Gl_SelectedIndex + 1;
 					Gl_SelectedID = acopy[Gl_SelectedIndex][0][0][1][1];
 					Data.aMetaRithm = acopy;
@@ -825,9 +862,11 @@ public class MainActivity extends Activity
 					getSettings("FROM_ARRAYS"); 
 					//запомнить настройки
 					setSettings(""); 
-					
 
-					spinner.setSelection(Gl_SelectedIndex);
+//************  ??????? indexof
+					spinner.setSelection(aliSpinner.indexOf( Gl_SelectedIndex));
+					//listView.setSelection(aliSpinner.indexOf( Gl_SelectedIndex));
+					
 					getParameters();
 					Toast.makeText(getApplicationContext(),
 								   "Тренировка скопирована" , Toast.LENGTH_SHORT).show();
@@ -871,8 +910,9 @@ public class MainActivity extends Activity
 					//запомнить настройки
 					setSettings(""); 
 					//getSettings("FROM_ARRAYS"); //????????????
-
-					spinner.setSelection(Gl_SelectedIndex);
+//*************???????
+					spinner.setSelection(aliSpinner.indexOf( Gl_SelectedIndex));
+					//listView.setSelection( aliSpinner.indexOf( Gl_SelectedIndex));
 					getParameters();
 					Toast.makeText(getApplicationContext(),
 								   "Формула изменена" , Toast.LENGTH_SHORT).show();
@@ -926,9 +966,12 @@ public class MainActivity extends Activity
         }
 
 		//выбор тренировки		
-		fillSpinner();
-		if (Data.mSettings.contains(Data.SET_TRAIN_INDEX))
+		fillRithmList();
+		if (Data.mSettings.contains(Data.SET_TRAIN_INDEX)){
+//**************
 			spinner.setSelection(aliSpinner.indexOf(Data.mSettings.getInt(Data.SET_TRAIN_INDEX, 0)));
+			//listView.setSelection(aliSpinner.indexOf(Data.mSettings.getInt(Data.SET_TRAIN_INDEX, 0)));
+			}
 	}
 
 
@@ -996,7 +1039,7 @@ public class MainActivity extends Activity
 			{
 				//Toast.makeText(getApplicationContext(),
 				//			   e.toString() , Toast.LENGTH_LONG).show();
-				
+
 			}
 		//наименование как парсить ??
 
@@ -1031,5 +1074,26 @@ public class MainActivity extends Activity
 		Data.sAMetaRithm = ss;
 		ss = Data.aRithm2TechString(Data.aRithm);
 		Data.sARithm = ss;
+	}
+	
+	//имеются ди потомки тренировки (лист или нет)
+	public boolean hasChildren(int index){
+		boolean fret = false;
+		for (int i=0; i<Data.aMetaRithm.length; i++)
+		  if (Data.aMetaRithm[index][0][0][1][1].equals(Data.aMetaRithm[i][0][0][2][1])){
+			 fret= true;  
+			 break;
+		  }	
+		return fret;  
+	}
+	//имеются ли родитель тренировки (показывать ли ее в выборе спиннера)
+	public boolean hasParent(int index){
+		boolean fret = false;
+		for (int i=0; i<Data.aMetaRithm.length; i++)
+			if (Data.aMetaRithm[index][0][0][2][1].equals( Data.aMetaRithm[i][0][0][1][1])){
+				fret= true;  
+				break;
+			}	
+		return fret;  
 	}
 }
