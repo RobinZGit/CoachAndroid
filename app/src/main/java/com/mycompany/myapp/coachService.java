@@ -23,6 +23,7 @@ import android.icu.text.*;
 import android.content.*;
 import com.mycompany.myapp.MainActivity;
 import javax.microedition.khronos.opengles.*;
+import java.util.concurrent.atomic.*;
 //
 
 public class coachService extends Service
@@ -48,7 +49,8 @@ public class coachService extends Service
 	private MatchParser GlParser;
 	String[][][] acopy;
 	Date dCurrWait;
-	int nRandDispers;
+	double nRandDispers;
+	double nRandDispersMulti;
 
 	private double nomeriteratsii = 1;
 	private double nomeriteratsii1 = 1;
@@ -340,9 +342,9 @@ public class coachService extends Service
 	private void fMainCircleIterationNew(boolean pFlWait)
 	{ 
 		if (true)
-		{
-
-			nRandDispers = 0;//test (int)Math.floor(Math.random() *Integer.parseInt(((Data.aRithm[0][1][0]))) * Integer.parseInt(((Data.aRithm[0][2][0]))) / 100);
+		{   			//if (nRandDispersMulti==0) nRandDispersMulti=100;
+			//int ii = Integer.parseInt( Math.round(nRandDispersMulti));
+						nRandDispers = 0;//test (int)Math.floor(Math.random() *Integer.parseInt(((Data.aRithm[0][1][0]))) * Integer.parseInt(((Data.aRithm[0][2][0]))) / 100);
             String[] glAvaluesFromDeal =fget_valuesFromDealBefore(Data.aRithm[10][0][3][1]);
 		    glsTextToSpeek =  glAvaluesFromDeal[0];//fget_valuesFromDealBefore(/* BeforeTextToSpeek100(*/Data.aRithm[10][0][3][1])[0];
 			gldNow = new Date();
@@ -357,6 +359,9 @@ public class coachService extends Service
 				nomeriteratsii1 = 0;
 			}
 		    GlParser.setVariable("номеритерации1", nomeriteratsii1);
+			
+						
+			
 
 		    pause();
 
@@ -388,7 +393,14 @@ public class coachService extends Service
 					GlParser.setVariable("прошлосек", durationMs / 1000);
 					GlParser.setVariable("прошломин", durationMs / (60000));
 					GlParser.setVariable("прошлочас", durationMs / (3600000));
-
+					
+					
+					try{
+						nRandDispersMulti = //Double.parseDouble 
+						    (GlParser.Parse( Data.aRithm[10][0][2][0]));
+					} catch (Exception e) {nRandDispersMulti =0;}
+					nRandDispersMulti = (100 +  nRandDispersMulti - 2 * Math.random() * nRandDispersMulti)/100;
+				
 					// длительность берем из дел. если там не была задана то берем из ритма
 					double nd= Double.parseDouble(glAvaluesFromDeal[1]);
 					if (nd <= 0)
@@ -398,7 +410,7 @@ public class coachService extends Service
 						}
 						catch (Exception e)
 						{}
-					resume((int) (nRandDispers + Math.round(nd * 1000)));
+					resume((int) (/*nRandDispers + */nRandDispersMulti * Math.round( nd * 1000)));
 				}
 			}
 		}  
