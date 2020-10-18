@@ -121,7 +121,10 @@ public class coachService extends Service
 					// ||(Data.aRithm[3][0][i + 1][1].trim().toLowerCase() == "double"))	 
 					// //  GlParser.setVariable(aParamBrief[i].trim(), Double.parseDouble(aParamV[i].trim()));
 
-					GlParser.setVariable(Data.aRithm[3][0][i + 1][0].trim(), Double.parseDouble(Data.aRithm[3][0][i + 1][3].trim()));
+					GlParser.setVariable(Data.aRithm[3][0][i + 1][0].trim(), //Double.parseDouble
+					         GlParser.Parse(Data.aRithm[3][0][i + 1][3].trim()));
+					         //!! GlParser.Parse чтобы можно было использовать формулы в значениях параметров
+							 //и также значении параметра можно использовать имена всех верхних параметров (надо эти имена показать на форме.. рядом с полными именами)
 
 				}
 				catch (Exception e)
