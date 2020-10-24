@@ -76,6 +76,9 @@ public class MainActivity extends Activity
 	int Gl_SelectedIndex = 0;
 	String Gl_SelectedID = "";
 
+	private boolean FLPAUSE =true;
+	private boolean FLFINISH =false;
+
 	private LinearLayout layout;
 	private LinearLayout layoutParams0;
 	private LinearLayout layoutTags;
@@ -115,6 +118,20 @@ public class MainActivity extends Activity
 		return 100000000 * i + PARAMLABEL_END_ID;
 	}
 
+	private void setPause(int iMode)
+	{
+		/*
+		 SharedPreferences.Editor editor = Data.mSettings.edit();
+		 editor.putInt("ISPAUSE",  iMode);
+		 try{
+		 editor.apply();
+		 }catch (Exception e){
+		 String s = e.toString();
+		 s = s+"88";
+		 }
+		 */
+	}
+
 	private void stopserv(String s)
 	{
 		Intent intent = new Intent(this, coachService.class);
@@ -122,10 +139,13 @@ public class MainActivity extends Activity
 		if (s == "wait")
 		{
 			intent.putExtra(s, 1);
-			startService(intent); //приостановить. не сбрасывать текущее состояние дел
+			startForegroundService(intent); //приостановить. не сбрасывать текущее состояние дел
 		}
-		else 
+		else
+		{
+			intent.putExtra(s, 1);
 		    stopService(intent);//завершить. сбросить текущее состояние дел   new Intent(this,coachService.class));
+		}
 	};
 	public void resume(int pDelay, int pCountOfAllIterations, int pRepeat, Date  p_dBegTraining)
 	{
@@ -136,8 +156,8 @@ public class MainActivity extends Activity
 		intent.putExtra("Delay", pDelay);
 		intent.putExtra("Repeat", pRepeat);
 		intent.putExtra("nBegTraining", (int)(p_dBegTraining.getTime() - 1000000 * Math.floor(p_dBegTraining.getTime() / 1000000)));//  p_dBegTraining.getHours()*60*60*1000 +p_dBegTraining.getMinutes()*60*1000 + p_dBegTraining.getSeconds()*1000) );
-
-		startService(intent);
+		if (FLPAUSE) intent.putExtra("wait", 1); 
+		startForegroundService(intent);
 	}
 
 	@Override
@@ -178,6 +198,7 @@ public class MainActivity extends Activity
 	@Override
 	protected void onDestroy()
 	{
+		setPause(0);
 		setSettings(""); 
 		// TODO: Implement this method
 		super.onDestroy();
@@ -223,6 +244,7 @@ public class MainActivity extends Activity
 //
 		btnTest.setVisibility(View.GONE); //тестовая кнопка невидима
 		btnLoad.setVisibility(View.GONE); //пока недоделано..
+        listView.setVisibility(View.GONE);
 
 		Gl_CountOfIterations = 0;
 		TTS = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
@@ -320,7 +342,7 @@ public class MainActivity extends Activity
 					//название параметра
 					TextView tv = new TextView(this);
 					LayoutParams lp0 = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-					tv.setText("  " + aS00[ind][2].toLowerCase() + ":");
+					tv.setText("  " + aS00[ind][2].toLowerCase() + " (" + aS00[ind][0] + " ) :");
 					tv.setId(fget_paramLabelId(1 + ind));
 					layoutParams0.addView(tv, lp0);
 
@@ -337,12 +359,17 @@ public class MainActivity extends Activity
 
 	public void onClickFinish(View view)
 	{
+		//Intent intent = new Intent(this, coachService.class);
+
+		//intent.set
+		//stopService(intent);
 		stopserv("exit");
 		this.finish();
 	}
 
     public void onClickMain(View view)
 	{
+		//FLPAUSE = !FLPAUSE;
         //запомнить дату выполнения (? перенести в сервис на окончание выполнения ?)
 		Date d =new Date();
 		Data.aMetaRithm[Gl_SelectedIndex][1][0][3][1] = d.toString();
@@ -355,6 +382,7 @@ public class MainActivity extends Activity
 
 		//при запущенной тренировке (даже на паузе) отключаем реакцию кнопок 
 		spinner.setEnabled(false);
+		//listView.setEnabled(false);
 		chkToday.setEnabled(false);
 		btnEdit.setEnabled(false);
 		btnSaveAll.setEnabled(false);
@@ -381,8 +409,10 @@ public class MainActivity extends Activity
 				Date dNow = new Date();
 			    if (btnMain.getText() == TXT_BTN_PAUSED)
 				{
+					/**/
+					setPause(0);
 					speak("тренировка продолжена"); 
-					resume(1 * 1000, Gl_CountOfAllIterations, 1, dNow); //&&&  не работает отсрочка
+					//???	resume(1 * 1000, Gl_CountOfAllIterations, 1, dNow); //&&&  не работает отсрочка
 				}
 				else
 				{
@@ -418,10 +448,19 @@ public class MainActivity extends Activity
 
 			}
 			else
-			{
-				btnMain.setText(TXT_BTN_PAUSED);
-				stopserv("wait");
-				speak("тренировка приостановлена"); 
+			{	
+				try
+				{
+					/**/setPause(1);
+					btnMain.setText(TXT_BTN_PAUSED);
+					//??				stopserv("wait");
+					speak("тренировка приостановлена"); 
+				}
+				catch (Exception e)
+				{
+					String s = e.toString();
+					s = s + "88";
+				}
 			}
 		}
 	}
@@ -492,26 +531,26 @@ public class MainActivity extends Activity
 			{   boolean flHasParent = hasParent(i);
 				boolean flHasChildren = hasChildren(i);
 			    if (!flHasChildren) //временно - показываем только листы. затем нужно только верхние т.е. (!(hasParent(i) ))
-				if (!(GlParser1.Parse(Data.aMetaRithm[i][1][0][0][1]) > 0) | !isChkToday)
-					if (IsRithmInSelectedTags(i)) 
-					{   
-					    String s = "";
-						Date d = new Date();
-						try
-						{
-							Date d1 = new Date(Date.parse(Data.aMetaRithm[i][1][0][3][1]));
-							if (d.getDate() == d1.getDate()) s = "СЕГОДНЯ ВЫПОЛНЯЛАСЬ - "; else s = "";
-						}
-						catch (Exception e)
-						{
-							s = "";
-						}  
-                        if (flHasChildren) s = ">> " + s;
-						//if (d.getDate()==d1.getDate()) s = "СЕГОДНЯ ВЫПОЛНЯЛАСЬ - "; else s= "";
-						alSpinner.add(s + 
-									  Data.aMetaRithm[i][0][0][0][1]);
-						aliSpinner.add(i);
-					}	
+					if (!(GlParser1.Parse(Data.aMetaRithm[i][1][0][0][1]) > 0) | !isChkToday)
+						if (IsRithmInSelectedTags(i)) 
+						{   
+							String s = "";
+							Date d = new Date();
+							try
+							{
+								Date d1 = new Date(Date.parse(Data.aMetaRithm[i][1][0][3][1]));
+								if (d.getDate() == d1.getDate()) s = "СЕГОДНЯ ВЫПОЛНЯЛАСЬ - "; else s = "";
+							}
+							catch (Exception e)
+							{
+								s = "";
+							}  
+							if (flHasChildren) s = ">> " + s;
+							//if (d.getDate()==d1.getDate()) s = "СЕГОДНЯ ВЫПОЛНЯЛАСЬ - "; else s= "";
+							alSpinner.add(s + 
+										  Data.aMetaRithm[i][0][0][0][1]);
+							aliSpinner.add(i);
+						}	
 		    }
 			catch (Exception e)
 			{
@@ -521,32 +560,35 @@ public class MainActivity extends Activity
 		}	
 		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_single_choice /* .simple_spinner_item*/, alSpinner);
 		//adapter.setDropDownViewResource(android.R.layout.simple_gallery_item);
-		
+
 //******************??		
 		spinner.setAdapter(adapter);
-		
-       // listView.setAdapter(adapter);
-	   
-		OnItemSelectedListener itemSelectedListener = new OnItemSelectedListener() {
+
+		//  listView.setAdapter(adapter);
+
+		OnItemSelectedListener 
+			//OnItemClickListener
+			itemSelectedListener = new  OnItemSelectedListener()
+		{  
 			@Override
 			public void onItemSelected(AdapterView<?> parent, View view, int position, long id)
 			{
-				
-				
-				Gl_SelectedIndex = aliSpinner.get( position); //???????
+
+
+				Gl_SelectedIndex = aliSpinner.get(position); //???????
 				Gl_SelectedID = Data.aMetaRithm[Gl_SelectedIndex][0][0][1][1];
-				
+
 				//boolean flHasParent = hasParent(po);
 				/*
-				boolean flHasChildren = hasChildren(Gl_SelectedIndex);
-				if (flHasChildren) {
-					
-					ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, alSpinner);
-					adapter.setDropDownViewResource(android.R.layout.simple_gallery_item);
-					spinner.setAdapter(adapter);
-					
-				}//  .inflate( .//fillSpinner();//onItemSelected(parent,view,position,id);
-                */
+				 boolean flHasChildren = hasChildren(Gl_SelectedIndex);
+				 if (flHasChildren) {
+
+				 ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, alSpinner);
+				 adapter.setDropDownViewResource(android.R.layout.simple_gallery_item);
+				 spinner.setAdapter(adapter);
+
+				 }//  .inflate( .//fillSpinner();//onItemSelected(parent,view,position,id);
+				 */
 				btnMain.setText(TXT_BTN_NOTSTARTED);
 				tvTextToSpeek.setText(Data.aMetaRithm[Gl_SelectedIndex][2][0][0][1]);
 				tvDelay.setText(Data.aMetaRithm[Gl_SelectedIndex][1][0][2][1]);
@@ -565,7 +607,27 @@ public class MainActivity extends Activity
 		};
 //*****************
 		spinner.setOnItemSelectedListener(itemSelectedListener);
-		//listView.setOnItemSelectedListener(itemSelectedListener);
+		////listView .setOnItemSelectedListener(itemSelectedListener);
+		/*listView.setOnItemClickListener(new OnItemClickListener() {
+
+		 @Override
+		 public void onItemClick(AdapterView<?> arg0, View view, int position,
+		 long j) {
+		 Gl_SelectedIndex = aliSpinner.get( position); //???????
+		 Gl_SelectedID = Data.aMetaRithm[Gl_SelectedIndex][0][0][1][1];
+
+
+		 btnMain.setText(TXT_BTN_NOTSTARTED);
+		 tvTextToSpeek.setText(Data.aMetaRithm[Gl_SelectedIndex][2][0][0][1]);
+		 tvDelay.setText(Data.aMetaRithm[Gl_SelectedIndex][1][0][2][1]);
+		 tvRepeat.setText(Data.aMetaRithm[Gl_SelectedIndex][1][0][1][1]);
+		 tvTextToSpeek.setText(Data.aMetaRithm[Gl_SelectedIndex][2][0][0][1]);
+		 getTags();//?? оно надо  ??
+		 getParameters();
+
+		 }
+		 });
+		 */
 	}
     //
 
@@ -624,16 +686,16 @@ public class MainActivity extends Activity
 			if (!myPath.exists()) myPath.mkdir();
 			FileWriter fw = new FileWriter(myFile);
 			PrintWriter pw = new PrintWriter(fw);
-/*
-			Map<String,?> prefsMap = prefs.getAll();
+			/*
+			 Map<String,?> prefsMap = prefs.getAll();
 
-			for (Map.Entry<String,?> entry : prefsMap.entrySet())
-			{
-				pw.println(entry.getKey() + Data.DELIMITER  + entry.getValue().toString() + Data.DELIMITER);            
-			}
-			*/
+			 for (Map.Entry<String,?> entry : prefsMap.entrySet())
+			 {
+			 pw.println(entry.getKey() + Data.DELIMITER  + entry.getValue().toString() + Data.DELIMITER);            
+			 }
+			 */
 			pw.println(spref);            
-			
+
 			pw.close();
 			fw.close();
 			Toast.makeText(getApplicationContext(),
@@ -864,9 +926,9 @@ public class MainActivity extends Activity
 					setSettings(""); 
 
 //************  ??????? indexof
-					spinner.setSelection(aliSpinner.indexOf( Gl_SelectedIndex));
+					spinner.setSelection(aliSpinner.indexOf(Gl_SelectedIndex));
 					//listView.setSelection(aliSpinner.indexOf( Gl_SelectedIndex));
-					
+
 					getParameters();
 					Toast.makeText(getApplicationContext(),
 								   "Тренировка скопирована" , Toast.LENGTH_SHORT).show();
@@ -911,7 +973,7 @@ public class MainActivity extends Activity
 					setSettings(""); 
 					//getSettings("FROM_ARRAYS"); //????????????
 //*************???????
-					spinner.setSelection(aliSpinner.indexOf( Gl_SelectedIndex));
+					spinner.setSelection(aliSpinner.indexOf(Gl_SelectedIndex));
 					//listView.setSelection( aliSpinner.indexOf( Gl_SelectedIndex));
 					getParameters();
 					Toast.makeText(getApplicationContext(),
@@ -967,11 +1029,12 @@ public class MainActivity extends Activity
 
 		//выбор тренировки		
 		fillRithmList();
-		if (Data.mSettings.contains(Data.SET_TRAIN_INDEX)){
+		if (Data.mSettings.contains(Data.SET_TRAIN_INDEX))
+		{
 //**************
 			spinner.setSelection(aliSpinner.indexOf(Data.mSettings.getInt(Data.SET_TRAIN_INDEX, 0)));
 			//listView.setSelection(aliSpinner.indexOf(Data.mSettings.getInt(Data.SET_TRAIN_INDEX, 0)));
-			}
+		}
 	}
 
 
@@ -1075,23 +1138,27 @@ public class MainActivity extends Activity
 		ss = Data.aRithm2TechString(Data.aRithm);
 		Data.sARithm = ss;
 	}
-	
+
 	//имеются ди потомки тренировки (лист или нет)
-	public boolean hasChildren(int index){
+	public boolean hasChildren(int index)
+	{
 		boolean fret = false;
-		for (int i=0; i<Data.aMetaRithm.length; i++)
-		  if (Data.aMetaRithm[index][0][0][1][1].equals(Data.aMetaRithm[i][0][0][2][1])){
-			 fret= true;  
-			 break;
-		  }	
+		for (int i=0; i < Data.aMetaRithm.length; i++)
+			if (Data.aMetaRithm[index][0][0][1][1].equals(Data.aMetaRithm[i][0][0][2][1]))
+			{
+				fret = true;  
+				break;
+			}	
 		return fret;  
 	}
 	//имеются ли родитель тренировки (показывать ли ее в выборе спиннера)
-	public boolean hasParent(int index){
+	public boolean hasParent(int index)
+	{
 		boolean fret = false;
-		for (int i=0; i<Data.aMetaRithm.length; i++)
-			if (Data.aMetaRithm[index][0][0][2][1].equals( Data.aMetaRithm[i][0][0][1][1])){
-				fret= true;  
+		for (int i=0; i < Data.aMetaRithm.length; i++)
+			if (Data.aMetaRithm[index][0][0][2][1].equals(Data.aMetaRithm[i][0][0][1][1]))
+			{
+				fret = true;  
 				break;
 			}	
 		return fret;  

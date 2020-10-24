@@ -24,6 +24,7 @@ import android.content.*;
 import com.mycompany.myapp.MainActivity;
 import javax.microedition.khronos.opengles.*;
 import java.util.concurrent.atomic.*;
+import java.util.concurrent.*;
 //
 
 public class coachService extends Service
@@ -58,12 +59,18 @@ public class coachService extends Service
 
 	private Timer glTimer;
 	private TimerTask glTimerTask;  
-
+	//private static final int DELTA_MIN = 10; //msec
+	private int ndelta = 0;
+	private Date gldPrev = new Date();
+	private boolean FLPAUSE =false;
+	private boolean FLFINISH =false;
 	public void onCreate()
 	{
 		super.onCreate();
 
 		Data = new coachUtility();
+		Data.mSettings = getSharedPreferences(Data.SET_FILE_NAME, Context.MODE_PRIVATE);
+
 
 		GlParser = new MatchParser();
 		GlParser.setVariable("номеритерации", nomeriteratsii);
@@ -122,17 +129,18 @@ public class coachService extends Service
 					// //  GlParser.setVariable(aParamBrief[i].trim(), Double.parseDouble(aParamV[i].trim()));
 
 					GlParser.setVariable(Data.aRithm[3][0][i + 1][0].trim(), //Double.parseDouble
-					         GlParser.Parse(Data.aRithm[3][0][i + 1][3].trim()));
-					         //!! GlParser.Parse чтобы можно было использовать формулы в значениях параметров
-							 //и также значении параметра можно использовать имена всех верхних параметров (надо эти имена показать на форме.. рядом с полными именами)
+										 GlParser.Parse(Data.aRithm[3][0][i + 1][3].trim()));
+					//!! GlParser.Parse чтобы можно было использовать формулы в значениях параметров
+					//и также значении параметра можно использовать имена всех верхних параметров (надо эти имена показать на форме.. рядом с полными именами)
 
 				}
 				catch (Exception e)
 				{}
 			//
 
-
-			startserv((intent.getIntExtra("wait", 0) == 1), intent.getIntExtra("CountOfAllIterations", -1), GlnDelayMs);
+	        if (intent.getIntExtra("exit", 0) == 1) FLFINISH = true;
+			if (intent.getIntExtra("wait", 0) == 1) FLPAUSE = true; else FLPAUSE = false;
+			startserv(false/*(intent.getIntExtra("wait", 0) == 1)*/, intent.getIntExtra("CountOfAllIterations", -1), GlnDelayMs);
 		}
 		catch (Exception e)
 		{}
@@ -143,7 +151,9 @@ public class coachService extends Service
 
 
 	public void onDestroy()
-	{
+	{    
+	    FLFINISH = true;
+	    stopSelf(); //?????
 		pause();
 		super.onDestroy();
 	}
@@ -324,7 +334,7 @@ public class coachService extends Service
 		//  sn=	String.valueOf(GlParser.Parse(Data.aRithm[10][0][0][0]) );
 		//} catch (Exception e){
 		//sn = String.valueOf(Integer.parseInt(Data.aRithm[10][0][0][0]));
-		sn = String.valueOf(Math.floor( Double.parseDouble(Data.aRithm[10][0][0][0])));
+		sn = String.valueOf(Math.floor(Double.parseDouble(Data.aRithm[10][0][0][0])));
 		//}   
 		if (Double.parseDouble(sn) > 1)
 		{
@@ -344,36 +354,53 @@ public class coachService extends Service
 	}; 
 	private void fMainCircleIterationNew(boolean pFlWait)
 	{ 
-		if (true)
-		{   			//if (nRandDispersMulti==0) nRandDispersMulti=100;
+		//if (true)  //!!!!!!!
+		int icount =0;
+		int iPause=0;
+	    while (! FLFINISH)		
+		{   
+		    icount = (icount + 1) % 10000;
+
+
+
+
+
+		    //if (nRandDispersMulti==0) nRandDispersMulti=100;
 			//int ii = Integer.parseInt( Math.round(nRandDispersMulti));
-						nRandDispers = 0;//test (int)Math.floor(Math.random() *Integer.parseInt(((Data.aRithm[0][1][0]))) * Integer.parseInt(((Data.aRithm[0][2][0]))) / 100);
+			nRandDispers = 0;//test (int)Math.floor(Math.random() *Integer.parseInt(((Data.aRithm[0][1][0]))) * Integer.parseInt(((Data.aRithm[0][2][0]))) / 100);
             String[] glAvaluesFromDeal =fget_valuesFromDealBefore(Data.aRithm[10][0][3][1]);
 		    glsTextToSpeek =  glAvaluesFromDeal[0];//fget_valuesFromDealBefore(/* BeforeTextToSpeek100(*/Data.aRithm[10][0][3][1])[0];
 			gldNow = new Date();
 			GltxtSpeek += "\n" + glsTextToSpeek ;
+			/*!!!!!
+			 nomeriteratsii += 1;
+			 GlParser.setVariable("номеритерации", nomeriteratsii);
+			 nomeriteratsii1 += 1;
+			 if (Gl_CountOfIterations < nomeriteratsii)
+			 {
+			 nomeriteratsii = 1;
+			 nomeriteratsii1 = 0;
+			 }
+			 GlParser.setVariable("номеритерации1", nomeriteratsii1);
 
-		    nomeriteratsii += 1;
-		    GlParser.setVariable("номеритерации", nomeriteratsii);
-		    nomeriteratsii1 += 1;
-		    if (Gl_CountOfIterations < nomeriteratsii)
-			{
-				nomeriteratsii = 1;
-				nomeriteratsii1 = 0;
-			}
-		    GlParser.setVariable("номеритерации1", nomeriteratsii1);
-			
-						
-			
+			 !!!!!!*/
 
-		    pause();
 
-		    if ((Gl_CountOfIterations >= Gl_CountOfAllIterations1)
+			try
+			{wait(10);}
+			catch (Exception e)
+			{}
+			//!!!!!  pause();
+
+		    if (((Gl_CountOfIterations >= Gl_CountOfAllIterations1)
 				&& (Gl_CountOfAllIterations1 > 0)
 				)
+				|| FLFINISH)
+
 			{
 				//! btnMain.setText(TXT_BTN_FINISHED);
 				gldNow = new Date();
+				FLFINISH = true;
 			    //! tvTextToSpeek.append( formatter.format(gldNow) + " тренировка завершена" );
 				speak("тренировка завершена"); 
 		    }
@@ -381,39 +408,75 @@ public class coachService extends Service
 			{
 				if (GlnDelayMs > 0)
 				{
-					resume(GlnDelayMs);
+					//
+					//!!!resume(GlnDelayMs);
 					GlnDelayMs = 0;
 				} 
-				else
-				{
-					// speak(aParamBrief[1]);
-					speak(glsTextToSpeek); 
-					fDecGl_aRithm();
-					//
-					gldNow1 = new Date();
-					durationMs =   (int)(gldNow1.getTime() - 1000000 * Math.floor(gldNow1.getTime() / 1000000)) - Gl_nBegTraining;//  (double)(gldNow1.getTime() - Gl_nBegTraining);
-					GlParser.setVariable("прошломс",  durationMs);
-					GlParser.setVariable("прошлосек", durationMs / 1000);
-					GlParser.setVariable("прошломин", durationMs / (60000));
-					GlParser.setVariable("прошлочас", durationMs / (3600000));
-					
-					
-					try{
-						nRandDispersMulti = //Double.parseDouble 
-						    (GlParser.Parse( Data.aRithm[10][0][2][0]));
-					} catch (Exception e) {nRandDispersMulti =0;}
-					nRandDispersMulti = (100 +  nRandDispersMulti - 2 * Math.random() * nRandDispersMulti)/100;
-				
-					// длительность берем из дел. если там не была задана то берем из ритма
-					double nd= Double.parseDouble(glAvaluesFromDeal[1]);
-					if (nd <= 0)
+				else 
+				// if (iPause==1){} //!!!!
+				//	else
+				{   //!!
+					/*
+					 if (icount==0)
+					 if   (Data.mSettings.contains("ISPAUSE"))
+					 iPause= Data.mSettingsData.getInt ("ISPAUSE", 0);
+					 else
+					 iPause=0;
+
+					 if (iPause==1) continue;
+					 */
+
+				    Date dNow = new Date();
+				    if ((dNow.getTime() - gldPrev.getTime()) >= ndelta)
+					{ //!!
+
+
+						// speak(aParamBrief[1]);
+						speak(glsTextToSpeek); 
+						fDecGl_aRithm();
+						//
+						gldNow1 = new Date();
+						durationMs =   (int)(gldNow1.getTime() - 1000000 * Math.floor(gldNow1.getTime() / 1000000)) - Gl_nBegTraining;//  (double)(gldNow1.getTime() - Gl_nBegTraining);
+						GlParser.setVariable("прошломс",  durationMs);
+						GlParser.setVariable("прошлосек", durationMs / 1000);
+						GlParser.setVariable("прошломин", durationMs / (60000));
+						GlParser.setVariable("прошлочас", durationMs / (3600000));
+
+						//!!!!!
+						nomeriteratsii += 1;
+						GlParser.setVariable("номеритерации", nomeriteratsii);
+						nomeriteratsii1 += 1;
+						if (Gl_CountOfIterations < nomeriteratsii)
+						{
+							nomeriteratsii = 1;
+							nomeriteratsii1 = 0;
+						}
+						GlParser.setVariable("номеритерации1", nomeriteratsii1);
+						//!!!!!!!
+
 						try
 						{
-							nd =  GlParser.Parse(Data.aRithm[10][0][1][0]);
+							nRandDispersMulti = //Double.parseDouble 
+								(GlParser.Parse(Data.aRithm[10][0][2][0]));
 						}
 						catch (Exception e)
-						{}
-					resume((int) (/*nRandDispers + */nRandDispersMulti * Math.round( nd * 1000)));
+						{nRandDispersMulti = 0;}
+						nRandDispersMulti = (100 +  nRandDispersMulti - 2 * Math.random() * nRandDispersMulti) / 100;
+
+						// длительность берем из дел. если там не была задана то берем из ритма
+						double nd= Double.parseDouble(glAvaluesFromDeal[1]);
+						if (nd <= 0)
+							try
+							{
+								nd =  GlParser.Parse(Data.aRithm[10][0][1][0]);
+							}
+							catch (Exception e)
+							{}
+						gldPrev = new Date();
+						ndelta = (int) (nRandDispersMulti * Math.round(nd * 1000));
+
+						//!!resume(ndelta);//(int) (/*nRandDispers + */nRandDispersMulti * Math.round( nd * 1000)));
+					}//!!
 				}
 			}
 		}  

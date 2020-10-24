@@ -23,14 +23,14 @@ android:layout_height="match_parent">
 	<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 		android:id="@+id/linearLayout"
 		android:layout_width="match_parent"
-		android:layout_height="20sp"
+		android:layout_height="2sp"
 		android:gravity="top"
 		android:orientation = "vertical"
 		android:scrollbars="vertical">
 	<ListView
 		android:id="@+id/listView"
 		android:layout_width="match_parent"
-		android:layout_height="wrap_content"
+		android:layout_height="match_parent"
 	>
 	</ListView>
 	</LinearLayout>
