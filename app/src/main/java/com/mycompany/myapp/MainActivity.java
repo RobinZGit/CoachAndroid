@@ -139,7 +139,7 @@ public class MainActivity extends Activity
 		if (s == "wait")
 		{
 			intent.putExtra(s, 1);
-			startForegroundService(intent); //приостановить. не сбрасывать текущее состояние дел
+			startService(intent); //приостановить. не сбрасывать текущее состояние дел
 		}
 		else
 		{
@@ -157,7 +157,7 @@ public class MainActivity extends Activity
 		intent.putExtra("Repeat", pRepeat);
 		intent.putExtra("nBegTraining", (int)(p_dBegTraining.getTime() - 1000000 * Math.floor(p_dBegTraining.getTime() / 1000000)));//  p_dBegTraining.getHours()*60*60*1000 +p_dBegTraining.getMinutes()*60*1000 + p_dBegTraining.getSeconds()*1000) );
 		if (FLPAUSE) intent.putExtra("wait", 1); 
-		startForegroundService(intent);
+		startService(intent);
 	}
 
 	@Override
