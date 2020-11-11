@@ -4,7 +4,7 @@ package com.mycompany.myapp;
 //с уже расчитанными интервалами и фразами (если у них нет признака расчета онлайн)
 
 
-
+//!! ПОКА НЕ НУЖЕН, ПРОЕКТ.
 
 	import android.app.Service;
 	import android.content.Intent;

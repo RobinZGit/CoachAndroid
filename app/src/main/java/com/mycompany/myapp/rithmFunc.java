@@ -4,10 +4,54 @@ package com.mycompany.myapp;
 */
 import java.sql.*;
 import java.util.function.*;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 
 public class rithmFunc
 {
-	
+	protected String dateFormat ="dd.MM.yyyy";
+	//--------------------------------
+	//ГЛАВНАЯ ФУНЦКЦИЯ. ПАРСИТ СТРОКУ ВИДА "f(p1,p2,...)" И ВЫЧИСЛЯЕТ. 
+	//f НУЖНО ОПРЕДеЛЯТЬ В ЭТОМ МОДУЛЕ
+	public String ev(String callStr){
+		String sRet=callStr;
+		try{
+	    String sName = callStr.substring(0,callStr.indexOf("("));
+		//! если вдруг будет запятая внутри параметра, нужно не просто сделаь split а вначале заменить ,, или ,\n на что-то, а после split сделать обратную замену во всех эл-х массива
+		String[] aPar = callStr.substring(callStr.indexOf("(")+1,callStr.indexOf(")")).split(",");
+		switch (sName){
+			case "toNum": 
+				try {sRet = String.valueOf( toNum( new SimpleDateFormat(dateFormat).parse(aPar[1]),aPar[3]));}
+			              catch (Exception e){sRet = "0";}
+			    break;
+		    case "rithmLinear": 
+			    sRet =String.valueOf(0.01*Math.round( 100* rithmLinear(Double.parseDouble( aPar[1]), Double.parseDouble( aPar[3]), Double.parseDouble( aPar[5]), Double.parseDouble( aPar[7]), Double.parseDouble( aPar[9]))));
+				break;
+			//case "rithmLinearFromDate2Date": 
+			//    sRet =String.valueOf( rithmLinearFromDate2Date(new SimpleDateFormat(dateFormat).parse(aPar[1]), new SimpleDateFormat(dateFormat).parse(aPar[3]), Double.parseDouble( aPar[5]), new SimpleDateFormat(dateFormat).parse(aPar[7]), Double.parseDouble( aPar[9])));
+			//	break;
+			case "rithmLinearFromDate2DateByNow": 
+			    sRet =String.valueOf(0.01*Math.round( 100*  rithmLinearFromDate2DateByNow( new SimpleDateFormat(dateFormat).parse(aPar[1]), Double.parseDouble( aPar[3]), new SimpleDateFormat(dateFormat).parse(aPar[5]), Double.parseDouble( aPar[7]))));
+				break;
+			case "rithmSin":
+				sRet = String.valueOf(rithmSin(Double.parseDouble( aPar[1]), 
+											   Double.parseDouble( aPar[1]), 
+											   Double.parseDouble( aPar[1]), 
+				                               Integer.parseInt(aPar[1]), 
+				                               Double.parseDouble( aPar[1]), 
+				                               Double.parseDouble( aPar[1])) 
+				                    ) ;
+			    break;
+		    
+				
+		}
+		}catch (Exception e){sRet=e.toString();}// callStr;}
+		
+		return sRet;
+	}
+	//--------------------------------
+
 	//currDate: new Date(),
 
 
@@ -31,16 +75,16 @@ public class rithmFunc
 	}
 
    //разность дат (в годах, месяцах,днях,часах,минутах,секундах
-   public int dateDiff(Date dBeg, Date dEnd, String sFormat) {
+   public long dateDiff(Date dBeg, Date dEnd, String sFormat) {
 	    long remaining = dEnd.getTime() - dBeg.getTime(); // миллисекунды до даты
 	    switch (sFormat)
 		{
-			case "year": return (int) remaining / (1000 * 60 * 60 * 24 * 365);    
-		    case "month": return (int) remaining / (1000 * 60 * 60 * 24 * 30);   
-		    case "date": return (int) remaining / (1000 * 60 * 60 * 24);   
-		    case "hours": return (int) remaining / (1000 * 60 * 60);   
-		    case "minutes": return (int) remaining / (1000 * 60);    
-		    case "seconds": return (int) remaining / 1000; 
+			case "year": return remaining / (1000 * 60 * 60 * 24 * 365);    
+		    case "month": return remaining / (1000 * 60 * 60 * 24 * 30);   
+		    case "date": return remaining / (1000 * 60 * 60 * 24);   
+		    case "hours": return remaining / (1000 * 60 * 60);   
+		    case "minutes": return remaining / (1000 * 60);    
+		    case "seconds": return remaining / 1000; 
 			default: return 0;
 		}
 	}
@@ -50,8 +94,22 @@ public class rithmFunc
 	public double rithmLinear(double x, double oBeg_x,double  oBeg_y, double oEnd_x, double oEnd_y) {
 		return oBeg_y + (x - oBeg_x) * (oEnd_y - oBeg_y) / (oEnd_x - oBeg_x);
 	}
-
-
+	//линейный ритм с начальным и конечным значениями {dBeg, Beg.y} {dEnd,rEnd.y}
+	//возвращает значение в точке х. 
+	public double rithmLinearFromDate2Date(Date x, Date oBeg_x,double  oBeg_y, Date oEnd_x, double oEnd_y) {
+		return  oBeg_y +  dateDiff(oBeg_x,x,"date") * (oEnd_y - oBeg_y) /dateDiff ( oBeg_x, oEnd_x,"date")
+			   ;
+	}
+	//аналогично предыдущему но на текущую дату
+	public double rithmLinearFromDate2DateByNow(Date oBeg_x,double  oBeg_y, Date oEnd_x, double oEnd_y) {
+		Date x = new Date();
+		return  oBeg_y +  dateDiff(oBeg_x,x,"date") * (oEnd_y - oBeg_y) /dateDiff ( oBeg_x, oEnd_x,"date")
+			;
+	}
+	//Math.round(glOcalendar.rithmLinear(glOcalendar.toNum(glOcalendar.currDate,'date'),{x:20200101,y:12},{x:20211212,y:20}))"
+	//,"+Math.round((glOcalendar.rithmSin(glOcalendar.toNum(glOcalendar.currDate,'date'),20200101,20200128,2,0,4)))"
+	//,"раз(вдох и столько же выдох)","дых. в обед равномерно увелич по шагам","","true","",""],
+	
 	//синусоидальный ритм с nCycles периодов на отрезке xBeg,xEnd, средним значением nAverage и амплитудой nAmplitude
 	//возвращает значение в точке х. 
 	public double  rithmSin(double x, 

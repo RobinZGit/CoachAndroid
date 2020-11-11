@@ -98,8 +98,10 @@ public class MainActivity extends Activity
 
 	private boolean isChkToday = true;
 	private coachUtility Data;
+	private dataBaseInit Datab;
 
 	private MatchParser GlParser1;
+	private rithmFunc GlF;
 
 	//для динамической генерации вьюх на форме
 	protected final int CHECKBOX_END_ID = 10;
@@ -107,15 +109,19 @@ public class MainActivity extends Activity
 	protected final int PARAMLABEL_END_ID = 30;
 	protected int fget_checkboxId(int i)
 	{
-		return 1000 * i + CHECKBOX_END_ID;
+		return 100 * i + CHECKBOX_END_ID;
 	}
 	protected int fget_paramTextId(int i)
 	{
-		return 100000 * i + PARAMTEXT_END_ID;
+		return 10000 * i + PARAMTEXT_END_ID;
 	}
 	protected int fget_paramLabelId(int i)
 	{
-		return 100000000 * i + PARAMLABEL_END_ID;
+		return 1000000 * i + PARAMLABEL_END_ID;
+	}
+	protected int fget_paramFormulaId(int i)
+	{
+		return 1000000000 * i + PARAMLABEL_END_ID;
 	}
 
 	private void setPause(int iMode)
@@ -150,7 +156,9 @@ public class MainActivity extends Activity
 	public void resume(int pDelay, int pCountOfAllIterations, int pRepeat, Date  p_dBegTraining)
 	{
 		Intent intent = new Intent(this, coachService.class);
+		//intent.putExtra("aRithmD", Datab.sARithmD);
 		intent.putExtra("aRithm", Data.sARithm);
+		
 		intent.putExtra("aDeals100", Data.sADeals100);//test
 		intent.putExtra("CountOfAllIterations", pCountOfAllIterations);
 		intent.putExtra("Delay", pDelay);
@@ -210,7 +218,10 @@ public class MainActivity extends Activity
 		//! не гасить экран.
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 		GlParser1 = new MatchParser();
+		GlF = new rithmFunc();
+		//GlF.ev("toNum(1,22,333,4444)");
 		Data = new coachUtility();
+		Datab = new dataBaseInit();
 
 		formatter = new SimpleDateFormat("HH:mm:ss");
 		setContentView(R.layout.main);
@@ -349,9 +360,33 @@ public class MainActivity extends Activity
 					//значение параметра
 					EditText edt = new EditText(this);
 					lp0 = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-					edt.setText(aS00[ind][3]);
+					String sVal = aS00[ind][3];
+					if (aS00[ind][5].trim().length()>0)//если задана формула параметра
+						sVal = GlF.ev(aS00[ind][5].trim());
+					edt.setText(sVal);
 					edt.setId(fget_paramTextId(1 + ind));
 					layoutParams0.addView(edt, lp0);
+					
+					//формула - если задана
+					if (aS00[ind][5].trim().length()>0){
+						
+						TextView tv1= new TextView(this);
+						lp0 = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+						tv1.setText("  ! значение рассчитано по формуле:");//\""+ aS00[ind][2].toLowerCase()  +"\" рассчитано по формуле:");
+						//tv1.setId(fget_paramLabelId(1 + ind));
+						layoutParams0.addView(tv1, lp0);
+						
+						EditText edt1 = new EditText(this);
+						lp0 = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+						edt1.setText(aS00[ind][5]);
+						edt1.setTextSize(12);
+						//edt1.setTextColor(Color.parseColor("#FFFFFF"));
+						//edt1.setId(fget_paramFormulaId(1 + ind));
+						layoutParams0.addView(edt1, lp0);
+					}
+					
+					
+					
 				}
 		}
 
@@ -469,7 +504,7 @@ public class MainActivity extends Activity
 	{
 		try
 		{
-			TTS.speak(s, TextToSpeech.QUEUE_FLUSH, null); 
+			TTS.speak  (s, TextToSpeech.QUEUE_FLUSH, null); 
 		}
 		catch (Exception e)
 		{
@@ -558,9 +593,10 @@ public class MainActivity extends Activity
 							   "Exception: " + e.toString(), Toast.LENGTH_LONG).show();
 			}		
 		}	
-		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_single_choice /* .simple_spinner_item*/, alSpinner);
+		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.  simple_spinner_item/*.simple_list_item_single_choice .simple_spinner_item*/, alSpinner);
 		//adapter.setDropDownViewResource(android.R.layout.simple_gallery_item);
-
+//
+		//<com.mycompany.myapp.VerticalScrollview
 //******************??		
 		spinner.setAdapter(adapter);
 
@@ -633,7 +669,10 @@ public class MainActivity extends Activity
 
 	//<<ФОРМА РЕДАКТИРОВАНИЯ
 	public void onClickEdit(View view)
-	{
+	{  //speak("<silence msec=\"2000\"/>");
+		//Toast.makeText(getApplicationContext(),
+			//		   " <silence msec=\"2000\"/> ", Toast.LENGTH_LONG).show();
+		
 		getSettings(""); 
 		setSettings("");
 		Intent intent = new Intent(MainActivity.this, EditFormActivity.class);
@@ -839,10 +878,16 @@ public class MainActivity extends Activity
 	//<<загрузить из файла (новые и изменения старых)
 	public void onClickClone(View view)
 	{
+		//Toast.makeText(getApplicationContext(),
+		//GlF.ev("rithmLinearFromDate2Date(на дату,10.11.2020,линейно от даты, 01.09.2020, от значения, 10, до даты,01.09.2022, до значения, 20)")
+		//			   , Toast.LENGTH_SHORT).show();
 		AlertDialog.Builder alert = new AlertDialog.Builder(this);
 
 		alert.setTitle("Копирование");
-		alert.setMessage("Введите наименование новой тренировки:");
+		alert.setMessage(
+			//GlF.ev("rithmLinearFromDate2Date(на дату,10112020,линейно от даты, 01092020, от значения, 10, до даты,01092022, до значения, 20)")
+		    "Введите наименование новой тренировки:"
+		     );
 
 		final EditText input = new EditText(this);
 		input.setText(sMakeUniqueWord(Data.aMetaRithm[Gl_SelectedIndex][0][0][0][1], "КОПИЯ", 0));
@@ -1021,7 +1066,7 @@ public class MainActivity extends Activity
 				//else из модуля
 				String ss = Data.aMetaRithm2TechString(Data.aMetaRithmInit);
 				Data.sAMetaRithm = ss;
-				ss = Data.aRithm2TechString(Data.aDeals100Init);
+				ss = Data.aRithm2TechString(Data .aDeals100Init);
 				Data.sADeals100 = ss;
 			}		
 			Data.mSplit5d(Data.sAMetaRithm);

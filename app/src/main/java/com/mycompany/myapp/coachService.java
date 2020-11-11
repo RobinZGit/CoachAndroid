@@ -64,6 +64,8 @@ public class coachService extends Service
 	private Date gldPrev = new Date();
 	private boolean FLPAUSE =false;
 	private boolean FLFINISH =false;
+	private boolean FLPHRASEISSPOKEN = true;
+	private String RESULTSTRING ="";
 	public void onCreate()
 	{
 		super.onCreate();
@@ -215,9 +217,22 @@ public class coachService extends Service
     public void speak(String s)
 	{
 		try
-		{
+		{ //  TTS.addSpeech(s, RESULTSTRING);
 			TTS.speak(s, TextToSpeech.QUEUE_FLUSH, null); 
 			//  tvTextToSpeek.setText( String.valueOf(Gl_CountOfIterations) + " | "+ glsTextToSpeek);//  String.valueOf(Gl_CountOfIterations));
+			FLPHRASEISSPOKEN=true; //???асинхрон ?
+		}
+		catch (Exception e)
+		{}
+	}
+	public void speakPause(int ms)
+	{
+		try
+		{  
+		   // TTS.
+			TTS.playSilence(ms, TextToSpeech.QUEUE_ADD, null); 
+			//  tvTextToSpeek.setText( String.valueOf(Gl_CountOfIterations) + " | "+ glsTextToSpeek);//  String.valueOf(Gl_CountOfIterations));
+			FLPHRASEISSPOKEN=true; //??? асинхрон?
 		}
 		catch (Exception e)
 		{}
@@ -428,8 +443,9 @@ public class coachService extends Service
 
 				    Date dNow = new Date();
 				    if ((dNow.getTime() - gldPrev.getTime()) >= ndelta)
+				   // if (FLPHRASEISSPOKEN) 
 					{ //!!
-
+                       
 
 						// speak(aParamBrief[1]);
 						speak(glsTextToSpeek); 
@@ -474,7 +490,7 @@ public class coachService extends Service
 							{}
 						gldPrev = new Date();
 						ndelta = (int) (nRandDispersMulti * Math.round(nd * 1000));
-
+                     //   speakPause(ndelta);
 						//!!resume(ndelta);//(int) (/*nRandDispers + */nRandDispersMulti * Math.round( nd * 1000)));
 					}//!!
 				}
