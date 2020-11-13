@@ -166,6 +166,7 @@ public class MainActivity extends Activity
 		intent.putExtra("nBegTraining", (int)(p_dBegTraining.getTime() - 1000000 * Math.floor(p_dBegTraining.getTime() / 1000000)));//  p_dBegTraining.getHours()*60*60*1000 +p_dBegTraining.getMinutes()*60*1000 + p_dBegTraining.getSeconds()*1000) );
 		if (FLPAUSE) intent.putExtra("wait", 1); 
 		startService(intent);
+		
 	}
 
 	@Override

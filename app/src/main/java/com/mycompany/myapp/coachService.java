@@ -2,6 +2,8 @@ package com.mycompany.myapp;
 //package ru.startandroid.develop.p0921servicesimple;
 
 import android.app.Service;
+import android.app.Notification;
+import android.app.PendingIntent;
 import android.content.Intent;
 import android.os.IBinder;
 import android.util.Log;
@@ -101,7 +103,8 @@ public class coachService extends Service
             Data.sADeals100 = intent.getStringExtra("aDeals100");
 			Data.aRithm = Data.mSplit4d100(Data.sARithm);
 			Data.aDeals100 = Data.mSplit4d100(Data.sADeals100);
-
+            
+			//GlnOneCycle = Data.aRithm[10].length;
 			GlnRepeat =  intent.getIntExtra("Repeat", 1);
 			if (GlnRepeat > 1)
 			{
@@ -147,6 +150,15 @@ public class coachService extends Service
 		catch (Exception e)
 		{}
 
+		
+		Notification notification = new Notification(R.drawable.ic_launcher, getText(R.string.app_name),
+													 System.currentTimeMillis());
+		//Intent notificationIntent = intent;//new Intent(this, MainActivity.class);
+		PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
+	//	notification. setLatestEventInfo(this, getText(R.string.app_name),
+		//							getText(R.string.app_name), pendingIntent);
+
+		startForeground(10, notification);
 		return  START_STICKY;//! super.onStartCommand(intent, flags, startId);
 	}
 
