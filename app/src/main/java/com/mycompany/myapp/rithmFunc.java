@@ -36,13 +36,25 @@ public class rithmFunc
 				break;
 			case "rithmSin":
 				sRet = String.valueOf(rithmSin(Double.parseDouble( aPar[1]), 
-											   Double.parseDouble( aPar[1]), 
-											   Double.parseDouble( aPar[1]), 
-				                               Integer.parseInt(aPar[1]), 
-				                               Double.parseDouble( aPar[1]), 
-				                               Double.parseDouble( aPar[1])) 
+											   Double.parseDouble( aPar[3]), 
+											   Double.parseDouble( aPar[5]), 
+				                               Integer.parseInt(aPar[7]), 
+				                               Double.parseDouble( aPar[9]), 
+				                               Double.parseDouble( aPar[11])) 
 				                    ) ;
 			    break;
+			case "universalRithm1ByNow": //линейный плюс синус, с прицелом на универсальное использование в разных тренировках
+				sRet = String.valueOf(universalRithm1ByNow(
+										       new SimpleDateFormat(dateFormat).parse(aPar[1]),
+										       new SimpleDateFormat(dateFormat).parse(aPar[3]),
+											   Double.parseDouble( aPar[5]), 
+											   Double.parseDouble( aPar[7]), 
+				                               Integer.parseInt(aPar[9]), 
+				                               Double.parseDouble( aPar[11]), 
+				                               Double.parseDouble( aPar[13]),
+										       Integer.parseInt(aPar[15]) 
+											   ) 
+									  ) ;
 		    
 				
 		}
@@ -52,9 +64,27 @@ public class rithmFunc
 	}
 	//--------------------------------
 
-	//currDate: new Date(),
-
-
+	
+    //линейный плюс синус, с прицелом на универсальное использование в разных тренировках
+	public double  universalRithm1ByNow(//double x, 
+	                        Date xBeg, 
+	                        Date xEnd, 
+							Double yBeg,
+							Double yEnd,
+							int nCycles, 
+							double nAverage, 
+							double nAmplitude,
+							int nGrow //+-1  возрасьать или убывать синусу
+							) {
+		Date x = new Date();		
+		if (xBeg==xEnd) return yBeg;//нештатная ситуация, отрезок не должен быть точкой
+		double deltaX = dateDiff(xBeg,x,"date");	
+		double deltaXfull = dateDiff(xBeg,xEnd,"date");		
+		double deltaYfull = yEnd - yBeg;
+		return (yBeg + deltaX * deltaYfull/deltaXfull)
+		       + nGrow * nAmplitude * Math.sin((2 * 3.1415 * nCycles *deltaX / (deltaXfull)));
+	}
+	
 
 	//переводит дату в число до лет/месяцев/недель/дней/часов/минут/секунд
 	//в формате  yyyymmddhhmiss

@@ -38,7 +38,7 @@ android:layout_height="match_parent">
 		android:id="@+id/chkTrain"
 		android:gravity="center" 
 		android:layout_width="match_parent"
-		android:layout_height="100sp"
+		android:layout_height="60sp"
 		android:textSize="60sp"
 		android:background ="#fff999"
 	/>
@@ -117,6 +117,22 @@ android:layout_height="match_parent">
 		android:background ="#f55551"
 		android:onClick = "onClickFinish"
 	/>
+	<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+		android:id="@+id/linearLayoutParams"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:gravity="top"
+		android:orientation = "vertical"
+		android:scrollbars="vertical">
+	</LinearLayout>
+	<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+		android:id="@+id/linearLayoutTags"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:gravity="top"
+		android:orientation = "vertical"
+		android:scrollbars="vertical">
+	</LinearLayout>
 	<Button
 		android:id="@+id/btnClone"
 		android:gravity="top|left" 
@@ -198,6 +214,7 @@ android:layout_height="match_parent">
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content" 
 	/>
+<!--
 	<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 		android:id="@+id/linearLayoutTags"
 		android:layout_width="match_parent"
@@ -214,5 +231,6 @@ android:layout_height="match_parent">
 		android:orientation = "vertical"
 		android:scrollbars="vertical">
 	</LinearLayout>
+	-->
 </LinearLayout>
 </com.mycompany.myapp.VerticalScrollview>

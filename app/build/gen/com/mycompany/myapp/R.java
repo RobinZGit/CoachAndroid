@@ -15,17 +15,17 @@ public final class R {
     }
     public static final class id {
         public static final int btnCancel=0x7f060002;
-        public static final int btnClone=0x7f06000f;
-        public static final int btnDel=0x7f060010;
-        public static final int btnDisablededit=0x7f060013;
-        public static final int btnEdit=0x7f060014;
+        public static final int btnClone=0x7f060011;
+        public static final int btnDel=0x7f060012;
+        public static final int btnDisablededit=0x7f060015;
+        public static final int btnEdit=0x7f060016;
         public static final int btnFinish=0x7f06000e;
-        public static final int btnLoad=0x7f060012;
+        public static final int btnLoad=0x7f060014;
         public static final int btnSave=0x7f060001;
-        public static final int btnSaveAll=0x7f060011;
+        public static final int btnSaveAll=0x7f060013;
         public static final int btnStartStop=0x7f06000d;
-        public static final int btnTest=0x7f060015;
-        public static final int chkToday=0x7f060016;
+        public static final int btnTest=0x7f060017;
+        public static final int chkToday=0x7f060018;
         public static final int chkTrain=0x7f060007;
         public static final int idTextEditPrefs=0x7f060003;
         public static final int idTextsToSpeek=0x7f06000c;
@@ -35,10 +35,10 @@ public final class R {
         public static final int idTxtRepeatCap=0x7f06000a;
         public static final int linearLayout=0x7f060005;
         public static final int linearLayoutEdit=0x7f060000;
-        public static final int linearLayoutParams=0x7f060019;
-        public static final int linearLayoutTags=0x7f060018;
+        public static final int linearLayoutParams=0x7f06000f;
+        public static final int linearLayoutTags=0x7f060010;
         public static final int listView=0x7f060006;
-        public static final int progressBar=0x7f060017;
+        public static final int progressBar=0x7f060019;
         public static final int scrollMain=0x7f060004;
     }
     public static final class layout {

@@ -12,6 +12,9 @@
 	<uses-permission
 		android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 
+	<uses-permission
+		android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+
 	<application
 		android:allowBackup="true"
 		android:icon="@drawable/ic_launcher"
@@ -82,6 +85,14 @@
 
 		<service
 			android:name=".coachService"
+			android:enabled="true"
+			android:exported="true"
+			android:directBootAware="true">
+
+		</service>
+
+		<service
+			android:name=".macroRithmService"
 			android:enabled="true"
 			android:exported="true"
 			android:directBootAware="true">

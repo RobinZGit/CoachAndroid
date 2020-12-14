@@ -68,6 +68,7 @@ public class coachService extends Service
 	private boolean FLFINISH =false;
 	private boolean FLPHRASEISSPOKEN = true;
 	private String RESULTSTRING ="";
+	private int GlOneCycle=0;
 	public void onCreate()
 	{
 		super.onCreate();
@@ -104,7 +105,7 @@ public class coachService extends Service
 			Data.aRithm = Data.mSplit4d100(Data.sARithm);
 			Data.aDeals100 = Data.mSplit4d100(Data.sADeals100);
             
-			//GlnOneCycle = Data.aRithm[10].length;
+			GlOneCycle = Data.aRithm[10].length;
 			GlnRepeat =  intent.getIntExtra("Repeat", 1);
 			if (GlnRepeat > 1)
 			{
@@ -474,7 +475,7 @@ public class coachService extends Service
 						nomeriteratsii += 1;
 						GlParser.setVariable("номеритерации", nomeriteratsii);
 						nomeriteratsii1 += 1;
-						if (Gl_CountOfIterations < nomeriteratsii)
+						if (Gl_CountOfIterations< nomeriteratsii)
 						{
 							nomeriteratsii = 1;
 							nomeriteratsii1 = 0;
