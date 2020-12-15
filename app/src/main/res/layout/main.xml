@@ -1,6 +1,8 @@
 
 
-<com.mycompany.myapp.VerticalScrollview
+<!--<com.mycompany.myapp.VerticalScrollview-->
+<ScrollView
+	
 xmlns:android="http://schemas.android.com/apk/res/android"
 android:id="@+id/scrollMain"
 android:layout_width="match_parent"
@@ -233,4 +235,5 @@ android:layout_height="match_parent">
 	</LinearLayout>
 	-->
 </LinearLayout>
-</com.mycompany.myapp.VerticalScrollview>
+</ScrollView>
+<!--</com.mycompany.myapp.VerticalScrollview>-->
