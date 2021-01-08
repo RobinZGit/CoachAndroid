@@ -41,6 +41,7 @@ public class coachService extends Service
 	private Date gldNow1;
 	private int Gl_CountOfIterations = 0;
 	private int Gl_CountOfAllIterations1;
+	private int Gl_CountOfAllIterationsOneCycle;
 	private int GlnRepeat = 1;//сколько раз повторить всю тренировку
     private int Gl_nBegTraining;
 	private String GltxtSpeek;
@@ -119,9 +120,10 @@ public class coachService extends Service
 			GlnDelayMs = intent.getIntExtra("Delay", 0);
 			Date d = new Date();
 			Gl_nBegTraining = intent.getIntExtra("nBegTraining", (int)d.getTime());
-			if (intent.getIntExtra("CountOfAllIterations", -1) > 0)
+			if (intent.getIntExtra("CountOfAllIterations", -1) > 0){
+				Gl_CountOfAllIterationsOneCycle =intent.getIntExtra("CountOfAllIterations", -1);
 			    Gl_CountOfAllIterations1 = GlnRepeat * intent.getIntExtra("CountOfAllIterations", -1);
-
+             }
 
             //
 			for (int i=0; i < Data.aRithm[3][0].length - 1/*!!2*/; i++)
@@ -475,7 +477,7 @@ public class coachService extends Service
 						nomeriteratsii += 1;
 						GlParser.setVariable("номеритерации", nomeriteratsii);
 						nomeriteratsii1 += 1;
-						if (Gl_CountOfIterations< nomeriteratsii)
+						if (Gl_CountOfAllIterationsOneCycle< nomeriteratsii)
 						{
 							nomeriteratsii = 1;
 							nomeriteratsii1 = 0;

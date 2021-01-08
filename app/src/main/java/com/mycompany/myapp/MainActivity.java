@@ -107,6 +107,7 @@ public class MainActivity extends Activity
 	protected final int CHECKBOX_END_ID = 10;
 	protected final int PARAMTEXT_END_ID = 20;
 	protected final int PARAMLABEL_END_ID = 30;
+	protected final int PARAMFORMULA_END_ID = 40;
 	protected int fget_checkboxId(int i)
 	{
 		return 100 * i + CHECKBOX_END_ID;
@@ -121,7 +122,7 @@ public class MainActivity extends Activity
 	}
 	protected int fget_paramFormulaId(int i)
 	{
-		return 1000000000 * i + PARAMLABEL_END_ID;
+		return 1000000000 * i + PARAMFORMULA_END_ID;
 	}
 
 	private void setPause(int iMode)
@@ -382,7 +383,7 @@ public class MainActivity extends Activity
 						edt1.setText(aS00[ind][5]);
 						edt1.setTextSize(12);
 						//edt1.setTextColor(Color.parseColor("#FFFFFF"));
-						//edt1.setId(fget_paramFormulaId(1 + ind));
+						edt1.setId(fget_paramFormulaId(1 + ind));
 						layoutParams0.addView(edt1, lp0);
 					}
 					
@@ -1099,6 +1100,11 @@ public class MainActivity extends Activity
 			{
 				edtCurr = findViewById(fget_paramTextId(1 + i));	
 				Data.aMetaRithm[Gl_SelectedIndex][3][0][i][3] = edtCurr.getText().toString().trim();
+				
+				edtCurr = findViewById(fget_paramFormulaId(1 + i));	
+				if (!(edtCurr==null))
+				  Data.aMetaRithm[Gl_SelectedIndex][3][0][i][5] = edtCurr.getText().toString().trim();
+				//alParametersV.set(ii - 1, edtCurr.getText().toString().trim());
 				//alParametersV.set(ii - 1, edtCurr.getText().toString().trim());
 
 				//заменим значение параметра в массиве, чтобы сохранилось в настройках
