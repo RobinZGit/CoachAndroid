@@ -159,7 +159,7 @@ public class MainActivity extends Activity
 		Intent intent = new Intent(this, coachService.class);
 		//intent.putExtra("aRithmD", Datab.sARithmD);
 		intent.putExtra("aRithm", Data.sARithm);
-		
+
 		intent.putExtra("aDeals100", Data.sADeals100);//test
 		intent.putExtra("CountOfAllIterations", pCountOfAllIterations);
 		intent.putExtra("Delay", pDelay);
@@ -167,7 +167,7 @@ public class MainActivity extends Activity
 		intent.putExtra("nBegTraining", (int)(p_dBegTraining.getTime() - 1000000 * Math.floor(p_dBegTraining.getTime() / 1000000)));//  p_dBegTraining.getHours()*60*60*1000 +p_dBegTraining.getMinutes()*60*1000 + p_dBegTraining.getSeconds()*1000) );
 		if (FLPAUSE) intent.putExtra("wait", 1); 
 		startService(intent);
-		
+
 	}
 
 	@Override
@@ -363,21 +363,22 @@ public class MainActivity extends Activity
 					EditText edt = new EditText(this);
 					lp0 = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
 					String sVal = aS00[ind][3];
-					if (aS00[ind][5].trim().length()>0)//если задана формула параметра
+					if (aS00[ind][5].trim().length() > 0)//если задана формула параметра
 						sVal = GlF.ev(aS00[ind][5].trim());
 					edt.setText(sVal);
 					edt.setId(fget_paramTextId(1 + ind));
 					layoutParams0.addView(edt, lp0);
-					
+
 					//формула - если задана
-					if (aS00[ind][5].trim().length()>0){
-						
+					if (aS00[ind][5].trim().length() > 0)
+					{
+
 						TextView tv1= new TextView(this);
 						lp0 = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
 						tv1.setText("  ! значение рассчитано по формуле:");//\""+ aS00[ind][2].toLowerCase()  +"\" рассчитано по формуле:");
 						//tv1.setId(fget_paramLabelId(1 + ind));
 						layoutParams0.addView(tv1, lp0);
-						
+
 						EditText edt1 = new EditText(this);
 						lp0 = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
 						edt1.setText(aS00[ind][5]);
@@ -386,9 +387,9 @@ public class MainActivity extends Activity
 						edt1.setId(fget_paramFormulaId(1 + ind));
 						layoutParams0.addView(edt1, lp0);
 					}
-					
-					
-					
+
+
+
 				}
 		}
 
@@ -506,7 +507,7 @@ public class MainActivity extends Activity
 	{
 		try
 		{
-			TTS.speak  (s, TextToSpeech.QUEUE_FLUSH, null); 
+			TTS.speak(s, TextToSpeech.QUEUE_FLUSH, null); 
 		}
 		catch (Exception e)
 		{
@@ -623,7 +624,7 @@ public class MainActivity extends Activity
 
 				 ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, alSpinner);
 				 adapter.setDropDownViewResource(android.R.layout.simple_gallery_item);
-				 spinner.setAdapter(adapter);
+				 spinner.setAdapter(adapter); 
 
 				 }//  .inflate( .//fillSpinner();//onItemSelected(parent,view,position,id);
 				 */
@@ -673,8 +674,8 @@ public class MainActivity extends Activity
 	public void onClickEdit(View view)
 	{  //speak("<silence msec=\"2000\"/>");
 		//Toast.makeText(getApplicationContext(),
-			//		   " <silence msec=\"2000\"/> ", Toast.LENGTH_LONG).show();
-		
+		//		   " <silence msec=\"2000\"/> ", Toast.LENGTH_LONG).show();
+
 		getSettings(""); 
 		setSettings("");
 		Intent intent = new Intent(MainActivity.this, EditFormActivity.class);
@@ -889,7 +890,7 @@ public class MainActivity extends Activity
 		alert.setMessage(
 			//GlF.ev("rithmLinearFromDate2Date(на дату,10112020,линейно от даты, 01092020, от значения, 10, до даты,01092022, до значения, 20)")
 		    "Введите наименование новой тренировки:"
-		     );
+		);
 
 		final EditText input = new EditText(this);
 		input.setText(sMakeUniqueWord(Data.aMetaRithm[Gl_SelectedIndex][0][0][0][1], "КОПИЯ", 0));
@@ -1100,10 +1101,10 @@ public class MainActivity extends Activity
 			{
 				edtCurr = findViewById(fget_paramTextId(1 + i));	
 				Data.aMetaRithm[Gl_SelectedIndex][3][0][i][3] = edtCurr.getText().toString().trim();
-				
+
 				edtCurr = findViewById(fget_paramFormulaId(1 + i));	
-				if (!(edtCurr==null))
-				  Data.aMetaRithm[Gl_SelectedIndex][3][0][i][5] = edtCurr.getText().toString().trim();
+				if (!(edtCurr == null))
+					Data.aMetaRithm[Gl_SelectedIndex][3][0][i][5] = edtCurr.getText().toString().trim();
 				//alParametersV.set(ii - 1, edtCurr.getText().toString().trim());
 				//alParametersV.set(ii - 1, edtCurr.getText().toString().trim());
 
@@ -1143,6 +1144,7 @@ public class MainActivity extends Activity
 		//распарсить массивы и пр. 
 		//вызывается перед передачей в сервис, сохраняться в базе не должно	 
 		//---------------------------
+
 
 		//парсим по параметрам количества подходов, длительность и пр
 		for (int i=0; i < Data.aRithm[3][0].length - 1; i++)
@@ -1185,6 +1187,111 @@ public class MainActivity extends Activity
 							   e.toString() , Toast.LENGTH_LONG).show();
 			}  
 		}
+		//=========================================
+		//== обработка ссылок на ритмы. ===========
+		// для этого в массив Data.aRithm[10] добавлены индексы
+		// 4 - для id ,5 - для перечисления ссылок на ритмы
+		// и резервный массив Data.aRithm[9] заполняется теперь ритмами только для информации
+		//
+		//подстановка ритмов из ссылок
+		//ArrayList aList10 = new <ArrayList<String[][]>>;
+		//for (int i=0; i < Data.aRithm[10].length; i++) aList10.add(Data.aRithm[10][i]);
+		//
+		//String[][][] cDataaRithm10 = new String[Data.aRithm[10].length][][];
+		//System.arraycopy(Data.aRithm[10], 0, cDataaRithm10, 0, Data.aRithm[10].length);
+		boolean hasRLinks = true;
+		while (hasRLinks)
+		{
+			hasRLinks = false;
+		    for (int i=0; i < Data.aRithm[10].length; i++)
+			{
+				//int i =0;		
+				//while (i < Data.aRithm[10].length) {
+			    if (Data.aRithm[10][i].length >= 5) //есть ссылки на ритмы ( в 6м индексе масива)
+					if	((Data.aRithm[10][i][5][1].trim().length() > 0))
+					{
+						//Data.aRithm[10][i][5][1] = "2";//пометим чтобы потом не возвращаться в цикле выше
+						hasRLinks = true;
+						String[] aRth = Data.aRithm[10][i][5][1].split(",");
+						int cnt =Integer.parseInt(Data.aRithm[10][i][0][0]);
+						for (int iN=0; iN < cnt; iN++) 
+						{ //повторить замену ссылок количество раз в исходном ритме
+							//!! количество секунд, дисперсия а также дела ритма никак не учитываются, их лучше оставлять пустыми
+							//int k =-1;
+							for (int j=0; j < aRth.length; j++)
+							{
+								//найти k: Data.aRithm[10][k][4][1]=aRth[j]
+								int k =-1; 
+								boolean flFindR=false;
+								while ((k < Data.aRithm[9].length) && !flFindR)
+								{ //!!!!!
+									k++;
+									if (k < Data.aRithm[9].length)
+										if (Data.aRithm[9][k].length >= 4)
+											if (Data.aRithm[9][k][4][1].trim().equals(aRth[j].trim()))
+												flFindR = true;
+								}
+								if (flFindR)
+								{ //Найдено такое к. Скопировать Data.aRithm[10][k] после i и всех предыдущих к
+									String[][][] acopy;
+								    if(j<aRth.length-1) // последний раз не копируем ритм со ссылками, он уже не нужен
+									    acopy = new String[Data.aRithm[10].length + 1][][];
+									else
+								        acopy = new String[Data.aRithm[10].length][][];
+									int index = i+j;//?????????????????????+cnt*iN;
+									// Copy the elements at the left of the index.
+									System.arraycopy(Data.aRithm[10], 0, acopy, 0, index);
+									// Copy the elements at the right of the index.
+									System.arraycopy(Data.aRithm[9], k /*+ j*/, acopy, index + 0, 1);
+									//!!! acopy[index][5][1] = "0"; //сбросить отметку "только инфо для ссылок"
+									if (Data.aRithm[10].length > index + 0)
+									    if(j<aRth.length-1) // последний раз не копируем ритм со ссылками, он уже не нужен
+										    System.arraycopy(Data.aRithm[10], index + 0, acopy, index + 1, Data.aRithm[10].length - index - 0);
+										else 
+										  	System.arraycopy(Data.aRithm[10], index +0, acopy, index + 1, Data.aRithm[10].length - index - 1);
+									//cDataaRithm10 
+									Data.aRithm[10] = acopy;//???????
+									/*
+									 System.arraycopy(Data.aRithm[10], 1, acopy, index+1, Data.aRithm[10].length - index);
+									 System.arraycopy(acopy, index, Data.aRithm[10], index, 1);
+									 System.arraycopy(acopy, index, Data.aRithm[10], index, acopy.length);
+									 */
+								}
+							}
+						}
+
+					} 
+		    }
+		} 
+		//избавляемся от ссылок на один и тот же массив
+		for (int i=0; i < Data.aRithm[10].length; i++)
+			for (int j=i+1; j < Data.aRithm[10].length; j++)
+				if (Data.aRithm[10][i]==Data.aRithm[10][j]){
+					String[][] acopy = new String[Data.aRithm[10][j].length][];
+					System.arraycopy(Data.aRithm[10][j], 0, acopy, 0, Data.aRithm[10][j].length);
+					Data.aRithm[10][j] = acopy;
+				}
+			
+		
+		
+		/*
+		//Data.aRithm[10] =cDataaRithm10;
+		//удаление ритмов, использующихся только для ссылок
+		for (int i=0; i < Data.aRithm[10].length; i++)
+			if (Data.aRithm[10][i].length >= 5)
+				if (Data.aRithm[10][i][5][1].trim().equals( "1")||(Data.aRithm[10][i][6][1].trim().length()>0))
+				{
+					//удалить  ритм i
+					String[][][] acopy = new String[Data.aRithm[10].length - 1][][];
+					int index = i;//удалить iй элемент
+					System.arraycopy(Data.aRithm[10], 1, acopy, index, Data.aRithm[10].length - index - 1);
+					System.arraycopy(acopy, index, Data.aRithm[10], index, acopy.length);
+
+				}
+				*/
+		//=========================================
+		//=========================================
+
 		String ss = Data.aMetaRithm2TechString(Data.aMetaRithm);
 		Data.sAMetaRithm = ss;
 		ss = Data.aRithm2TechString(Data.aRithm);

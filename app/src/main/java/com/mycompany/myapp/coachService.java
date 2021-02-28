@@ -466,7 +466,7 @@ public class coachService extends Service
 					{ //!!
 
 
-						// speak(aParamBrief[1]);
+						//speak(Data.aRithm[10][0][0][0]);
 						speak(glsTextToSpeek); 
 						fDecGl_aRithm();
 						//
